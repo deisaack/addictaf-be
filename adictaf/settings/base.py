@@ -1,7 +1,7 @@
 import os
 
 from decouple import Csv, config
-from adictaf.aws.conf import *
+# from adictaf.aws.conf import *
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # LIVE_DIR = os.path.join(os.path.dirname(BASE_DIR), 'live')
