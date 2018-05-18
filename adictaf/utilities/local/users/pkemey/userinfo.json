@@ -1,0 +1,31 @@
+{
+    "local_cache": {
+        "device_id": "android-a205677ebb89a0a6",
+        "total_requests": 3,
+        "uuid": "bd99d3b4-d5c6-47a0-a1f6-6324183b35a5"
+    },
+    "logged_in_user": {
+        "allow_contacts_sync": false,
+        "allowed_commenter_type": "any",
+        "can_see_organic_insights": false,
+        "full_name": "De Isaac",
+        "has_anonymous_profile_picture": false,
+        "is_business": false,
+        "is_private": false,
+        "is_verified": false,
+        "nametag": {
+            "emoji": "😀",
+            "gradient": 0,
+            "mode": 0,
+            "selfie_sticker": 0
+        },
+        "phone_number": "",
+        "pk": 6828787764,
+        "profile_pic_id": "1680624201302957914_6828787764",
+        "profile_pic_url": "https://instagram.fnbo4-1.fna.fbcdn.net/vp/25504cb5848ab4c1200222da01417c9b/5B4FF2FC/t51.2885-19/25036011_566486543698899_4896812812556304384_n.jpg",
+        "reel_auto_archive": "unset",
+        "show_insights_terms": false,
+        "username": "pkemey"
+    },
+    "status": "ok"
+}

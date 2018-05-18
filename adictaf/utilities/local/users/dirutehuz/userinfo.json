@@ -1,0 +1,30 @@
+{
+    "local_cache": {
+        "device_id": "android-5ef9369e63fea7f9",
+        "total_requests": 4,
+        "uuid": "aa4c3b86-de54-4fc7-9f06-2a173c161206"
+    },
+    "logged_in_user": {
+        "allow_contacts_sync": false,
+        "allowed_commenter_type": "any",
+        "can_see_organic_insights": false,
+        "full_name": "dirty guy",
+        "has_anonymous_profile_picture": true,
+        "is_business": false,
+        "is_private": false,
+        "is_verified": false,
+        "nametag": {
+            "emoji": "😀",
+            "gradient": 2,
+            "mode": 0,
+            "selfie_sticker": 0
+        },
+        "phone_number": "",
+        "pk": 7527621343,
+        "profile_pic_url": "https://instagram.fpku4-1.fna.fbcdn.net/vp/f17e1275a70fc32e93cbf434ddc32bcd/5B6CCC7A/t51.2885-19/11906329_960233084022564_1448528159_a.jpg",
+        "reel_auto_archive": "unset",
+        "show_insights_terms": false,
+        "username": "dirutehuz"
+    },
+    "status": "ok"
+}
