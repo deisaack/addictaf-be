@@ -1,6 +1,7 @@
 import os
 
 from decouple import Csv, config
+from adictaf.aws.conf import *
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # LIVE_DIR = os.path.join(os.path.dirname(BASE_DIR), 'live')
@@ -71,6 +72,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'raven.contrib.django.raven_compat',
+    'storages',
 
     'noire',
 ]
