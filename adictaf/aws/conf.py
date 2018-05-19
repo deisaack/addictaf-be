@@ -1,4 +1,5 @@
 import datetime
+
 from decouple import config
 
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')
@@ -25,3 +26,7 @@ AWS_HEADERS = {
     'Expires': expires,
     'Cache-Control': 'max-age=%d' % (int(two_months.total_seconds()), ),
 }
+
+AWS_UPLOAD_BUCKET = "adictaf-files"
+AWS_UPLOAD_REGION = 'us-east-2'
+AWS_AUTO_CREATE_BUCKET = True

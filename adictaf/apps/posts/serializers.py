@@ -10,5 +10,3 @@ class PostSerializer(serializers.ModelSerializer):
         fields_to = [
             'id', 'comments', 'likes', 'timestamp', 'owner_id',
             'caption', 'image_url', 'video_url', 'is_video', 'status']
-
-

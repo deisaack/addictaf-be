@@ -1,5 +1,7 @@
 from django.db import models
+
 from adictaf.utilities.crypto import SafiCrypto
+
 
 class Project(models.Model):
     name = models.CharField(max_length=50, unique=True)

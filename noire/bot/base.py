@@ -31,13 +31,13 @@ from .api_search import (fbUserSearch, searchLocation, searchTags,
                          searchUsername, searchUsers)
 from .api_video import configureVideo, downloadVideo, uploadVideo
 from .bot_filter import filter_medias
-from .bot_get import (get_archived_medias, get_total_user_medias, convert_to_user_id,
-                      get_user_medias, get_your_medias, get_userid_from_username)
+from .bot_get import (convert_to_user_id, get_archived_medias,
+                      get_total_user_medias, get_user_medias,
+                      get_userid_from_username, get_your_medias)
 from .prepare import delete_credentials, get_credentials
 
 __all__ = ['NoireBot',]
 
-import urllib.parse
 
 class NoireBot(object):
     def __init__(self,

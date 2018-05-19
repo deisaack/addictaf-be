@@ -19,6 +19,3 @@ class AdictAFPagination(pagination.LimitOffsetPagination):
                 pass
 
         return self.default_limit
-
-
-

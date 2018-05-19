@@ -1,14 +1,19 @@
-from django.shortcuts import render
-from rest_framework import viewsets
-from .models import Post
-from django.shortcuts import get_object_or_404
-from . import serializers as sz
-from rest_framework.response import Response
-from django.db import transaction
-from rest_framework import status
-from noire.bot.base import NoireBot
 import logging
+
+from django.db import transaction
+from django.shortcuts import get_object_or_404, render
+from rest_framework import status, viewsets
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+from adictaf.apps.core.models import Project
+from adictaf.utilities.permissions import AdictAFAdminOrReadOnly
+from noire.bot.base import NoireBot
+
+from . import serializers as sz
+from .models import Post
+from .tasks import load_user_posts
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +21,6 @@ class PostViewset(viewsets.ModelViewSet):
     serializer_class = sz.PostSerializer
     queryset = Post.objects.all()
 
-from adictaf.apps.core.models import Project
-from .tasks import load_user_posts
 class UserViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
 
@@ -35,8 +38,6 @@ class UserViewSet(viewsets.ViewSet):
             post = Post.objects.select_for_update().get(pk=pk)
         except Post.DoesNotExist:
             return Response({"error": "No such post"}, status=status.HTTP_404_NOT_FOUND)
-from rest_framework.decorators import permission_classes, api_view
-from adictaf.utilities.permissions import AdictAFAdminOrReadOnly
 
 @api_view(['POST'])
 # @permission_classes([AdictAFAdminOrReadOnly])

@@ -8,7 +8,6 @@ import time
 from django.conf import settings
 from requests_toolbelt import MultipartEncoder
 
-
 # def downloadPhoto(self, media_id, filename, media=False, path='local/photos/'):
 #     if not media:
 #         self.mediaInfo(media_id)

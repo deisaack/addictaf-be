@@ -1,14 +1,18 @@
 import logging
-from noire.bot.base import NoireBot
-logger = logging.getLogger(__name__)
-from adictaf.apps.core.models import Project
-from .models import Post
-from datetime import datetime
+import os
 import random
 import time
-import os
-from django.conf import settings
+from datetime import datetime
+
 from celery import shared_task
+from django.conf import settings
+
+from adictaf.apps.core.models import Project
+from noire.bot.base import NoireBot
+
+from .models import Post
+
+logger = logging.getLogger(__name__)
 
 
 @shared_task
@@ -98,4 +102,3 @@ def load_user_posts(userid):
     bot.save_responce()
     proj.requests = bot.total_requests
     proj.save()
-

@@ -20,10 +20,3 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # CORS_ORIGIN_WHITELIST = config('CORS_ORIGIN_WHITELIST', cast=Csv())
 CORS_ORIGIN_ALLOW_ALL = True
-
-# TODO: Replace the below lines with valid ones
-# STATIC_URL='/static/'
-# STATIC_ROOT=os.path.join(LIVE_DIR, 'static')
-#
-# MEDIA_URL='/media/'
-# MEDIA_ROOT=os.path.join(LIVE_DIR, 'media')

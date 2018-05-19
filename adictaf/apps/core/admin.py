@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Project, Advert
+
+from .models import Advert, Project
 
 
 class ProjectAdmin(admin.ModelAdmin):

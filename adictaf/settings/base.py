@@ -1,11 +1,15 @@
 import os
+from datetime import timedelta
 
+import raven
 from decouple import Csv, config
-# from adictaf.aws.conf import *
+
+from adictaf.aws.conf import *
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 # LIVE_DIR = os.path.join(os.path.dirname(BASE_DIR), 'live')
 LIVE_DIR = os.path.join(BASE_DIR, 'live')
+SECRET_KEY=config('SECRET_KEY')
 
 AUTH_USER_MODEL = 'users.User'
 CELERY_BROKER_URL = 'amqp://localhost'
@@ -42,6 +46,8 @@ DATABASES = {
     }
 }
 
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
 DEFAULT_FROM_EMAIL = "AdictAF <"+config('EMAIL_HOST_USER')+">"
 EMAIL_HOST=config('EMAIL_HOST')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
@@ -61,6 +67,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'adictaf.apps.core',
+    'adictaf.apps.files',
     'adictaf.apps.instausers',
     'adictaf.apps.posts',
     'adictaf.apps.traffics',
@@ -76,6 +83,16 @@ INSTALLED_APPS = [
 
     'noire',
 ]
+EXPIRY = config('JWT_EXPIRATION_DELTA', 15, cast=int)
+
+JWT_AUTH = {
+    'JWT_EXPIRATION_DELTA': timedelta(minutes=EXPIRY),
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_REFRESH_EXPIRATION_DELTA': timedelta(minutes=int(EXPIRY)),
+    'JWT_SECRET_KEY': SECRET_KEY,
+    'JWT_AUTH_HEADER_PREFIX': 'Token',
+    # 'JWT_GET_USER_SECRET_KEY': 'utilities.auth.jwt_get_secret_key',
+}
 
 LANGUAGE_CODE = 'en-us'
 
@@ -92,9 +109,8 @@ MIDDLEWARE = [
 
 
 ROOT_URLCONF = 'adictaf.urls'
-SECRET_KEY=config('SECRET_KEY')
 STATIC_DIRS = (
-    os.path.join(BASE_DIR, 'static')
+    os.path.join(BASE_DIR, 'static'),
 )
 TEMPLATES = [
     {
@@ -116,8 +132,6 @@ TIME_ZONE = 'UTC'
 
 
 WSGI_APPLICATION = 'adictaf.wsgi.application'
-
-
 
 USE_I18N = True
 
@@ -149,7 +163,6 @@ NOIRE['USER_AGENT'] = 'Instagram 10.26.0 Android ({android_version}/{android_rel
     **NOIRE['DEVICE_SETTINTS'])
 
 
-import raven
 
 # RAVEN_CONFIG = {
 #     'dsn': 'https://38f9bed0f04646c39c5b161e120392c3:055bd27a24d3464c90a247c95105ca37@sentry.io/1205371',
@@ -173,7 +186,7 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.JSONParser',
     ),
     'DEFAULT_PAGINATION_CLASS': 'adictaf.utilities.paginators.AdictAFPagination',
-    'PAGE_SIZE': 15,
+    'PAGE_SIZE': 12,
 }
 
 HEROKU = config('HEROKU', False, cast=bool)
@@ -184,7 +197,7 @@ if HEROKU:
     DATABASES['default'].update(db_from_env)
     DATABASES['default']['CONN_MAX_AGE'] = 500
 
-LOGGING0 = {
+LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'filters': {

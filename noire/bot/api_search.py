@@ -2,7 +2,6 @@ from decouple import config
 from django.conf import settings
 
 
-
 def fbUserSearch(self, query):
     url = 'fbsearch/topsearch/?context=blended&query={query}&rank_token={rank_token}'.format(
         query=query,
