@@ -10,7 +10,6 @@ class PostFilter(filters.FilterSet):
         model = Post
         fields = {
             'owner_id': ['exact'],
-            'tag': ['iexact'],
             'is_video': ['exact'],
             'likes': ['lte', 'gte'],
             'timestamp': ['year__gt', 'gte'],

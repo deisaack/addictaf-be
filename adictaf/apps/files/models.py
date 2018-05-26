@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.db import models
 
-
 # Create your models here.
 class FileItem(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
@@ -21,9 +20,7 @@ class FileItem(models.Model):
     def __str__(self):
         return str(self.id)
 
-class FileTest(models.Model):
-    name = models.CharField(max_length=100)
-    file = models.FileField(blank=True, null=True)
 
-    def str(self):
-        return self.name
+class Document(models.Model):
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    upload = models.FileField(upload_to='files/documents/')

@@ -12,7 +12,7 @@ from django.conf import settings
 from requests_toolbelt import MultipartEncoder
 
 
-def downloadVideo(self, media_id, filename, media=False, path='local/videos/'):
+def downloadVideo(self, media_id, filename, media=False):
     if not media:
         self.mediaInfo(media_id)
         media = self.LastJson['items'][0]
@@ -21,15 +21,21 @@ def downloadVideo(self, media_id, filename, media=False, path='local/videos/'):
         clips = media['video_versions']
     except Exception:
         return False
-    if os.path.exists(path + filename):
-        return os.path.abspath(path + filename)
-    response = self.s.get(clips[0]['url'], stream=True)
+    if os.path.exists(self.videosDir + filename):
+        return os.path.abspath(self.videosDir + filename)
+    # Download small video
+    response = self.s.get(clips[-1]['url'], stream=True)
     if response.status_code == 200:
-        with open(path + filename, 'wb') as f:
+        with open(self.smVideosDir + filename, 'wb') as f:
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)
-        return os.path.abspath(path + filename)
-
+    # Download Hd video
+    response = self.s.get(clips[0]['url'], stream=True)
+    if response.status_code == 200:
+        with open(self.videosDir + filename, 'wb') as f:
+            response.raw.decode_content = True
+            shutil.copyfileobj(response.raw, f)
+        return os.path.abspath(self.videosDir + filename)
 
 def getVideoInfo(filename):
     res = {}
@@ -79,7 +85,7 @@ def uploadVideo(self, video, thumbnail, caption=None, upload_id=None):
     print('c')
 
     response = self.s.post(settings.NOIRE['API_URL'] + "upload/video/", data=m.to_string())
-    print('d')
+    # print('d')
 
     if response.status_code == 200:
         body = json.loads(response.text)

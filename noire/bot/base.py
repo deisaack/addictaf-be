@@ -62,6 +62,7 @@ class NoireBot(object):
         self.logger.addHandler(fh)
         self.logger.addHandler(ch)
         self.logger.setLevel(logging.DEBUG)
+        self.csrf_token = ''
         now_time = datetime.datetime.now()
         log_string = 'GetInfo v1.2.0 started at %s:' % \
                      (now_time.strftime("%d.%m.%Y %H:%M"))
@@ -79,14 +80,32 @@ class NoireBot(object):
         self.LastJson = None
         self.uuid = self.generateUUID(True)
         # self.login()
-        self.userDir = os.path.join(settings.NOIRE['BASE_DIR'], 'users/{0!s}'.format(self.username))
-        self.sessionFile = os.path.join(self.userDir, 'jar')
-        self.userInfoFile = os.path.join(self.userDir, 'userinfo.json')
+        self.baseDir = str(os.path.join(settings.NOIRE['BASE_DIR']))
+        self.mediaDir = str(os.path.join(settings.NOIRE['MEDIA_DIR']))
+        self.userDir = self.baseDir+'/users/{0!s}/'.format(self.username)
+        self.sessionFile = self.userDir+'jar'
+        self.userInfoFile = self.userDir+'userinfo.json'
+        self.testDir = self.baseDir+'/test/'
+
+        self.photosDir = self.mediaDir+'/photos/'
+        self.smPhotosDir = self.mediaDir+'/photos/sm/'
+        self.videosDir = self.mediaDir+'/videos/'
+        self.smVideosDir = self.mediaDir+'/videos/sm/'
         self.token = None
         self.max_likes_to_like = max_likes_to_like
         atexit.register(self.close)
+        self.make_dirs()
         self.login()
-        self.cache_dir = os.path.join(settings.NOIRE['STATIC_DIR'])
+
+    def make_dirs(self):
+        all_dirs = [
+            self.baseDir, self.userDir, self.testDir, self.smPhotosDir, self.smVideosDir
+        ]
+        for dir in all_dirs:
+            if os.path.exists(dir): continue
+            os.makedirs(dir)
+            # except FileExistsError:
+            #     pass
 
     def close(self):
         self.__save_cache()
@@ -102,9 +121,13 @@ class NoireBot(object):
         detail, success = self.__load_cookies()
         self.logger.info(detail)
         if success:
-            self.s.headers.update({'X-CSRFToken': self.s.cookies['csrftoken']})
+            try:
+                self.csrf_token = self.s.cookies.get('csrftoken', path='i.instagram.com')
+            except requests.cookies.CookieConflictError:
+                raise
+            self.s.headers.update({'X-CSRFToken': self.csrf_token})
             self.__load_user()
-            self.token = self.s.cookies['csrftoken']
+            self.token = self.csrf_token
             self.isLoggedIn = True
             self.user_id = self.LastJson["logged_in_user"]["pk"]
             log_string = 'Successfully login from cookies only'
@@ -239,7 +262,7 @@ class NoireBot(object):
 
 
     def __modification_date(self, filename):
-        """
+        """generateSignature
         return last file modification date as datetime object
         """
         t = os.path.getmtime(filename)
@@ -280,7 +303,7 @@ class NoireBot(object):
             json.dump(data, f, ensure_ascii=False, sort_keys=True, indent=4)
 
     def save_responce(self, filename='last.json'):
-        filename = str(self.cache_dir)+'/test/'+filename
+        filename = str(self.testDir)+filename
         with open(filename, 'w') as f:
             json.dump(self.LastJson, f, ensure_ascii=False, sort_keys=True, indent=4)
 
@@ -371,8 +394,8 @@ class NoireBot(object):
     def megaphoneLog(self):
         return self.SendRequest('megaphone/log/')
 
-    def downloadPhoto(self, source_url, filename, path):
-        return downloadPhoto(self, source_url, filename, path)
+    def downloadPhoto(self, source_url, filename, **kwargs):
+        return downloadPhoto(self, source_url, filename, **kwargs)
 
     # def downloadPhoto(self, media_id, filename, media=False, path='local/photos/'):
     #     return downloadPhoto(self, media_id, filename, media, path)
@@ -380,8 +403,8 @@ class NoireBot(object):
     def uploadVideo(self, photo, caption=None, upload_id=None):
         return uploadVideo(self, photo, caption, upload_id)
 
-    def downloadVideo(self, media_id, filename, media=False, path='video/'):
-        return downloadVideo(self, media_id, filename, media, path)
+    def downloadVideo(self, media_id, filename, **kwargs):
+        return downloadVideo(self, media_id, filename, **kwargs)
 
     # def settingsureVideo(self, upload_id, video, thumbnail, caption=''):
     #     return settingsureVideo(self, upload_id, video, thumbnail, caption)
@@ -666,7 +689,6 @@ class NoireBot(object):
 
     def _prepareRecipients(self, users, threadId=None, useQuotes=False):
         if not isinstance(users, list):
-            print('Users must be an list')
             return False
         result = {'users': '[[{}]]'.format(','.join(users))}
         if threadId:
@@ -726,7 +748,8 @@ class NoireBot(object):
             else:
                 total_followers = self.LastJson["user"]['follower_count']
             if total_followers > 200000:
-                print("Consider temporarily saving the result of this big operation. This will take a while.\n")
+                pass
+                # print("Consider temporarily saving the result of this big operation. This will take a while.\n")
         else:
             return False
         with tqdm(total=total_followers, desc="Getting followers", leave=False) as pbar:
@@ -740,7 +763,7 @@ class NoireBot(object):
                         sleep_track += 1
                         if sleep_track >= 20000:
                             sleep_time = randint(120, 180)
-                            print("\nWaiting %.2f min. due to too many requests." % float(sleep_time / 60))
+                            # print("\nWaiting %.2f min. due to too many requests." % float(sleep_time / 60))/
                             time.sleep(sleep_time)
                             sleep_track = 0
                     if len(temp["users"]) == 0 or len(followers) >= total_followers:
@@ -763,7 +786,8 @@ class NoireBot(object):
             else:
                 total_following = self.LastJson["user"]['following_count']
             if total_following > 200000:
-                print("Consider temporarily saving the result of this big operation. This will take a while.\n")
+                pass
+                # print("Consider temporarily saving the result of this big operation. This will take a while.\n")
         else:
             return False
         self.logger.debug('bbbbbbbbbbbbbbbbbbbb')
@@ -782,7 +806,7 @@ class NoireBot(object):
                         if sleep_track >= 20000:
                             self.logger.debug('ffffffffffffff')
                             sleep_time = randint(120, 180)
-                            print("\nWaiting %.2f min. due to too many requests." % float(sleep_time / 60))
+                            # print("\nWaiting %.2f min. due to too many requests." % float(sleep_time / 60))
                             time.sleep(sleep_time)
                             sleep_track = 0
                     if len(temp["users"]) == 0 or len(following) >= total_following:

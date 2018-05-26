@@ -7,9 +7,46 @@ import time
 from django.conf import settings
 from rest_framework import authentication, permissions, status
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from .models import FileItem
+from django.views.generic.edit import CreateView
+
+from .models import Document
+from rest_framework.views import  APIView
+from datetime import timedelta, timezone
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.decorators import api_view, parser_classes, permission_classes
+from rest_framework.permissions import AllowAny
+
+@api_view(['POST'])
+@parser_classes((MultiPartParser, FormParser))
+@permission_classes((AllowAny,))
+def upload_document(request):
+    try: file = request.FILES["file"]
+    except: return Response({'error': 'No file selected'}, status=status.HTTP_400_BAD_REQUEST)
+    # filename = str(file.name)
+    # save_path = os.path.join(os.path.join(settings.MEDIA_ROOT), filename)
+    # fs = FileSystemStorage()
+    # itemname = fs.save(filename, file)
+    # uploaded_file_url = fs.url(filename)
+    savedfile =Document.objects.create(
+            upload=file
+        )
+    # savedfile.file = file
+    # savedfile.save()
+    return Response({'success': 'File uploaded'}, status=201)
+
+class DocumentCreateView(CreateView):
+    model = Document
+    fields = ['upload', ]
+    success_url = '/'
+    template_name = 'sample.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        documents = Document.objects.all()
+        context['documents'] = documents
+        return context
 
 
 class FilePolicyAPI(APIView):

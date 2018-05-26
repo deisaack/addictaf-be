@@ -1,8 +1,8 @@
 from .base import *
 
-# ALLOWED_HOSTS =config('ALLOWED_HOSTS', cast=Csv())
+ALLOWED_HOSTS =config('ALLOWED_HOSTS', cast=Csv())
 
-ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS = ['*']
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',

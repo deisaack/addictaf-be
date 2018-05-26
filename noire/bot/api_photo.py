@@ -28,15 +28,22 @@ from requests_toolbelt import MultipartEncoder
 #         return os.path.abspath(path + filename)
 
 
-def downloadPhoto(self, source_url, filename, path):
-    if os.path.exists(path + filename):
-        return os.path.abspath(path + filename)
+def downloadPhoto(self, source_url, filename, small_url=None):
+    if os.path.exists(self.photosDir + filename):
+        return os.path.abspath(self.photosDir + filename)
+
+    if small_url is not None:
+        response = self.s.get(small_url, stream=True)
+        if response.status_code == 200:
+            with open(self.smPhotosDir + filename, 'wb') as f:
+                response.raw.decode_content = True
+                shutil.copyfileobj(response.raw, f)
     response = self.s.get(source_url, stream=True)
     if response.status_code == 200:
-        with open(path + filename, 'wb') as f:
+        with open(self.photosDir + filename, 'wb') as f:
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)
-        return os.path.abspath(path + filename)
+        return os.path.abspath(self.photosDir + filename)
 
 
 def compatibleAspectRatio(size):
@@ -44,7 +51,6 @@ def compatibleAspectRatio(size):
     width, height = size
     this_ratio = 1.0 * width / height
     return min_ratio <= this_ratio <= max_ratio
-
 
 def configurePhoto(self, upload_id, photo, caption=''):
     (w, h) = getImageSize(photo)
