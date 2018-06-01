@@ -20,6 +20,8 @@ urlpatterns = [
     path('users/', include('adictaf.apps.users.urls', namespace='users')),
 ]
 
+handler404 = 'adictaf.views.handler404'
+handler500 = 'adictaf.views.handler500'
 # if settings.DEBUG:
 #     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 #     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

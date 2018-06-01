@@ -117,7 +117,7 @@ STATICFILES_DIRS = (
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -211,7 +211,7 @@ LOGGING = {
     },
     'formatters': {
         'verbose': {
-            'format': '%(levelname)s|%(asctime)s|%(module)s|%(process)d|%(thread)d|%(message)s|%(name)s|%(filename)s:%(lineno)d)',
+            'format': '%(levelname)s|%(asctime)s|%(message)s|%(name)s)',
             'datefmt' : "%d/%b/%Y %H:%M:%S"
         },
         'simple': {
