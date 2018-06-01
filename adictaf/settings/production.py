@@ -32,3 +32,6 @@ ADMINS = (
     ('Elgon Hub', 'elgonhub.com@gmail.com'),
 )
 MANAGERS = ADMINS
+
+os.environ['HTTPS'] = "on"
+os.environ['wsgi.url_scheme'] = 'https'
