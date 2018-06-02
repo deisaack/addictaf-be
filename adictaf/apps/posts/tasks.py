@@ -89,7 +89,7 @@ class LoadUserPosts(object):
                     post.save()
                     post.create_tags_and_caption()
                 except:
-                    raise
+                    logger.warning('Probably Item has no caption')
                 if created:
                     if is_video:
                         vid_filename = '{0}_{1}'.format(
