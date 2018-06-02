@@ -129,16 +129,16 @@ class LoadUserPosts(object):
                 all_files.add(filename)
 
         all_files = list(all_files)
+        s3 = boto3.client('s3')
         for key, item in enumerate(all_files):
             if os.path.isdir(item):
-                # all_files.pop(key)
                 continue
-
-            s3 = boto3.client('s3')
-
             file_name = item.split('live')[-1][1:]
             bucket_name = settings.AWS_STORAGE_BUCKET_NAME
-            s3.upload_file(item, bucket_name, file_name)
+            try:
+                s3.upload_file(item, bucket_name, file_name)
+            except Exception as e:
+                logger.error("Failed to upload file upload file due to {0!s}".format(e))
 
     def close(self):
         self.upload_to_s3()
