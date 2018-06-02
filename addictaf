@@ -1,0 +1,82 @@
+upstream app_server {
+    server unix:/home/addictaf/web/addictaf/be/live/run/gunicorn.sock fail_timeout=0;
+}
+
+server {
+    server_name addictaf.com;
+
+    root /home/addictaf/web/addictaf/fe/adictaf;
+
+    index index.html index.htm;
+
+    location / {
+
+      try_files $uri $uri/ /index.html;
+    }
+
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/addictaf.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/addictaf.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    server_name api.addictaf.com;
+    keepalive_timeout 5;
+    client_max_body_size 4G;
+    rewrite ^(.*) https://$host$1 permanent;
+
+
+    access_log /home/addictaf/web/addictaf/be/live/logs/nginx-access.log;
+    error_log /home/addictaf/web/addictaf/be/live/logs/nginx-error.log;
+
+    # checks for static file, if not found proxy to app
+    location / {
+	proxy_redirect off;
+#	proxy_set_header X-Forwarded-Proto https;
+	proxy_redirect off;
+        try_files $uri @proxy_to_app;
+    }
+
+    location @proxy_to_app {
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+      proxy_redirect off;
+      proxy_pass https://app_server;
+    }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/api.addictaf.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/api.addictaf.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
+
+server {
+    if ($host = addictaf.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+    server_name addictaf.com;
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    return 404; # managed by Certbot
+
+
+}
+server {
+    if ($host = api.addictaf.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot#
+
+
+    server_name api.addictaf.com;
+    listen 80;
+    return 404; # managed by Certbot
+
+}

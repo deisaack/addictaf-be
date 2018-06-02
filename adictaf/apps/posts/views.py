@@ -145,7 +145,6 @@ def crawl_username(request):
         logger.error("No active project in db")
         return
     usernameid = bot.convert_to_user_id(username)
-    print(count)
     load_user_posts.delay(usernameid, int(count))
     return Response({"success": "data is being loaded"})
 

@@ -166,8 +166,9 @@ NOIRE['USER_AGENT'] = 'Instagram 10.26.0 Android ({android_version}/{android_rel
 
 
 RAVEN_CONFIG = {
-    'dsn': 'https://38f9bed0f04646c39c5b161e120392c3:055bd27a24d3464c90a247c95105ca37@sentry.io/1205371',
+    # 'dsn': 'https://38f9bed0f04646c39c5b161e120392c3:055bd27a24d3464c90a247c95105ca37@sentry.io/1205371',
     # If you are using git, you can also automatically configure the
+    'dsn': 'https://12665588ebee48e8b92401a391b0efe8:d123dadba8e3449f8dd6c09f263790be@sentry.io/1218203',
     # release based on the git info.
     'release': raven.fetch_git_sha(os.path.join(BASE_DIR)),
 }

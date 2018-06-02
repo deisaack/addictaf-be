@@ -126,14 +126,14 @@ class NoireBot(object):
             except requests.cookies.CookieConflictError:
                 raise
             self.s.headers.update({'X-CSRFToken': self.csrf_token})
-            self.__load_user()
-            self.token = self.csrf_token
-            self.isLoggedIn = True
-            self.user_id = self.LastJson["logged_in_user"]["pk"]
-            log_string = 'Successfully login from cookies only'
-            self.logger.info(log_string)
-            self.rank_token = "%s_%s" % (self.user_id, self.uuid)
-            return True
+            if self.__load_user():
+                self.token = self.csrf_token
+                self.isLoggedIn = True
+                self.user_id = self.LastJson["logged_in_user"]["pk"]
+                log_string = 'Successfully logedin from cookies only'
+                self.logger.info(log_string)
+                self.rank_token = "%s_%s" % (self.user_id, self.uuid)
+                return True
 
         m = hashlib.md5()
         m.update(self.username.encode('utf-8') + self.password.encode('utf-8'))
@@ -284,13 +284,16 @@ class NoireBot(object):
         return 'Cookies successfully loaded', True
 
     def __load_user(self):
-        with open(self.userInfoFile) as json_file:
-            self.LastJson = json.load(json_file)
-        data = self.LastJson.get('local_cache')
-        self.total_requests = data['total_requests']
-        self.uuid = data['uuid']
-        self.device_id = data['device_id']
-        return True
+        try:
+            with open(self.userInfoFile) as json_file:
+                self.LastJson = json.load(json_file)
+            data = self.LastJson.get('local_cache')
+            self.total_requests = data['total_requests']
+            self.uuid = data['uuid']
+            self.device_id = data['device_id']
+            return True
+        except:
+            return False
 
     def __save_cookies(self):
         with open(self.sessionFile, 'wb') as f:
