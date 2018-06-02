@@ -84,6 +84,9 @@ class LoadUserPosts(object):
                             "timestamp": datetime.fromtimestamp(item["taken_at"]).isoformat(),
                         }
                     )
+
+
+
                 try:
                     post.caption_tmp = item["caption"]["text"]
                     post.save()
