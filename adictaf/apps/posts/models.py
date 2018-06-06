@@ -13,6 +13,12 @@ class TagBlacklist(models.Model):
     def __str__(self):
         return self.name
 
+class Username(models.Model):
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
 class Post(models.Model):
     # id = models.CharField(primary_key=True, unique=True, validators=[MinValueValidator(1)])
     id = models.CharField(primary_key=True, unique=True, max_length=100)

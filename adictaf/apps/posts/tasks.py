@@ -133,11 +133,11 @@ class LoadUserPosts(object):
 
         all_files = list(all_files)
         s3 = boto3.client('s3')
+        bucket_name = settings.AWS_STORAGE_BUCKET_NAME
         for key, item in enumerate(all_files):
             if os.path.isdir(item):
                 continue
             file_name = item.split('live')[-1][1:]
-            bucket_name = settings.AWS_STORAGE_BUCKET_NAME
             try:
                 s3.upload_file(item, bucket_name, file_name)
             except Exception as e:
@@ -153,4 +153,5 @@ class LoadUserPosts(object):
 @shared_task
 def load_user_posts(userid, count=10):
     LoadUserPosts(userid, count)
+
 
