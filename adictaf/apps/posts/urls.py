@@ -10,7 +10,7 @@ app_name = 'posts'
 urlpatterns =[
     path(r'crawl-username/', views.crawl_username, name='crawl_username'),
     path(r'all-tags/', views.all_tags, name='all_tags'),
-    path(r'periodic-crawl/', views.periodicCrawl, name='all_tags'),
+    path(r'periodic-crawl/', views.periodicCrawl, name='periodic_crawl'),
 ]
 
 urlpatterns += router.urls
