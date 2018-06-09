@@ -12,7 +12,7 @@ LIVE_DIR = os.path.join(os.path.dirname(BASE_DIR), 'live')
 SECRET_KEY=config('SECRET_KEY')
 
 AUTH_USER_MODEL = 'users.User'
-CDN_URL=config('CDN_URL', '/')
+CDN_URL=config('CDN_URL')
 CELERY_BROKER_URL = 'amqp://localhost'
 CORS_ALLOW_HEADERS = (
     'accept',
