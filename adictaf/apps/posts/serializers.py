@@ -9,7 +9,7 @@ class PostSerializer(serializers.ModelSerializer):
     down_votes = serializers.SerializerMethodField()
     class Meta:
         model = Post
-        fields = ['image_hd', 'image_sm', 'created', 'views', 'video_hd', 'video_sm', 'id', 'up_votes', 'down_votes', 'caption', 'is_video', 'status', 'tags']
+        fields = ['image_hd', 'image_sm', 'video', 'image', 'created', 'views', 'video_hd', 'video_sm', 'id', 'up_votes', 'down_votes', 'caption', 'is_video', 'status', 'tags']
         read_only_fields = (
             'id', 'image_url',
         )

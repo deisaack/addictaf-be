@@ -51,22 +51,16 @@ class LoadUserPosts(object):
                 media_id=item["media_type"]
                 is_video = False
                 video_src=None
-                video_url = None
                 if media_id == 1:
-                    try: img = item["image_versions2"]["candidates"][0]["url"]
-                    except KeyError: img = item["image_versions2"]["candidates"][-1]["url"]
+                    img = item["image_versions2"]["candidates"][0]["url"]
                     thum = item["image_versions2"]["candidates"][-1]["url"]
                 elif media_id == 2:
-                    try: img = item["image_versions2"]["candidates"][0]["url"]
-                    except KeyError: img = item["image_versions2"]["candidates"][0]["url"]
+                    img = item["image_versions2"]["candidates"][0]["url"]
                     thum = item["image_versions2"]["candidates"][-1]["url"]
                     is_video = True
-                    video_src = item['video_versions'][0]['url']
-
-
+                    video_src = item['video_versions'][-1]['url']
                 elif media_id == 8:
-                    try:img = item["carousel_media"][0]["image_versions2"]["candidates"][1]["url"]
-                    except KeyError: img = item["carousel_media"][0]["image_versions2"]["candidates"][0]["url"]
+                    img = item["carousel_media"][0]["image_versions2"]["candidates"][0]["url"]
                     thum = item["carousel_media"][0]["image_versions2"]["candidates"][-1]["url"]
                 else:
                     img = None
@@ -80,8 +74,6 @@ class LoadUserPosts(object):
                             "video_src": video_src,
                             "shortcode": item["code"],
                             "comments": item["comment_count"],
-                            "image": img,
-                            "thumbnail": thum,
                             "likes": item["like_count"],
                             "owner_id": item["user"]["pk"],
                             "timestamp": datetime.fromtimestamp(item["taken_at"]).isoformat(),
@@ -102,9 +94,9 @@ class LoadUserPosts(object):
                             item['user']['username'], item['pk']
                         )
                         d = self.bot.downloadVideo(item['pk'], vid_filename, media=item)
-                        path = str(d).split('media')
+                        path = str(d).split('live')
                         video_url = path[-1][1:]
-                        post.video_hd = video_url
+                        post.video = settings.CDN_URL + video_url
                         post.video_sm = video_url.replace('videos/', 'videos/sm/')
                         post.save()
                     if img is not None:
@@ -112,9 +104,9 @@ class LoadUserPosts(object):
                             item['user']['username'], item['pk']
                         )
                         d = self.bot.downloadPhoto(img, img_filename, small_url=thum)
-                        path = str(d).split('media')
+                        path = str(d).split('live')
                         img_url = path[-1][1:]
-                        post.image_hd = img_url
+                        post.image = settings.CDN_URL + img_url
                         post.image_sm = img_url.replace('photos/', 'photos/sm/')
                         post.save()
 
@@ -146,11 +138,12 @@ class LoadUserPosts(object):
             except Exception as e:
                 logger.error("Failed to upload file upload file due to {0!s}".format(e))
                 continue
-            try:
-                os.remove(item)
-                logger.info('Item deleted')
-            except FileNotFoundError:
-                logger.warning('Failed to deleteitem')
+            if 'media' in item:
+                try:
+                    os.remove(item)
+                    logger.info('Item deleted')
+                except FileNotFoundError:
+                    logger.warning('Failed to deleteitem')
 
     def close(self):
         self.upload_to_s3()
@@ -168,7 +161,7 @@ from .models import Username
 class DailyTask:
     def __init__(self, username='', **kwargs):
         self.username = username
-        self.count = int(kwargs.get('count', 10))
+        self.count = int(kwargs.get('count', 100))
         self.forceLogin = kwargs.get('forceLogin', False)
 
     def periodicCrawl(self):
@@ -176,6 +169,7 @@ class DailyTask:
         for user in names:
             logger.info("The username is : " + user.name)
             self.crawl_single_username(user.name)
+            break
 
     def crawl_single_username(self, username):
         logger.info('Loading user posts for {0}'.format(username))

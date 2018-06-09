@@ -34,6 +34,7 @@ class Post(models.Model):
     image = models.URLField(null=True, blank=True, max_length=1000)
     image_hd = models.ImageField(null=True, blank=True)
     image_sm = models.ImageField(null=True, blank=True)
+    video = models.URLField(null=True, blank=True, max_length=1000)
     video_src = models.URLField(null=True, blank=True, max_length=1000)
     video_hd = models.FileField(null=True, blank=True)
     video_sm = models.FileField(null=True, blank=True)

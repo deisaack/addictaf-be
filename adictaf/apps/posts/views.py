@@ -148,11 +148,12 @@ def crawl_username(request):
     usernameid = bot.convert_to_user_id(username)
     load_user_posts.delay(usernameid, int(count))
     return Response({"success": "data is being loaded"})
+
 from . import tasks
 @api_view(['GET'])
 def periodicCrawl(request):
     tasks.daily_task.delay()
-    return Response(status=status.HTTP_204_NO_CONTENT)
+    return Response({"success": "request accepted"}, status=status.HTTP_202_ACCEPTED)
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
