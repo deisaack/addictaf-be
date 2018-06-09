@@ -169,7 +169,6 @@ class DailyTask:
         for user in names:
             logger.info("The username is : " + user.name)
             self.crawl_single_username(user.name)
-            break
 
     def crawl_single_username(self, username):
         logger.info('Loading user posts for {0}'.format(username))
