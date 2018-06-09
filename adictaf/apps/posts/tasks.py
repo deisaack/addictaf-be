@@ -53,17 +53,20 @@ class LoadUserPosts(object):
                 video_src=None
                 video_url = None
                 if media_id == 1:
-                    img = item["image_versions2"]["candidates"][0]["url"]
+                    try: img = item["image_versions2"]["candidates"][0]["url"]
+                    except KeyError: img = item["image_versions2"]["candidates"][-1]["url"]
                     thum = item["image_versions2"]["candidates"][-1]["url"]
                 elif media_id == 2:
-                    img = item["image_versions2"]["candidates"][0]["url"]
+                    try: img = item["image_versions2"]["candidates"][0]["url"]
+                    except KeyError: img = item["image_versions2"]["candidates"][0]["url"]
                     thum = item["image_versions2"]["candidates"][-1]["url"]
                     is_video = True
                     video_src = item['video_versions'][0]['url']
 
 
                 elif media_id == 8:
-                    img = item["carousel_media"][0]["image_versions2"]["candidates"][0]["url"]
+                    try:img = item["carousel_media"][0]["image_versions2"]["candidates"][1]["url"]
+                    except KeyError: img = item["carousel_media"][0]["image_versions2"]["candidates"][0]["url"]
                     thum = item["carousel_media"][0]["image_versions2"]["candidates"][-1]["url"]
                 else:
                     img = None
@@ -142,16 +145,51 @@ class LoadUserPosts(object):
                 s3.upload_file(item, bucket_name, file_name)
             except Exception as e:
                 logger.error("Failed to upload file upload file due to {0!s}".format(e))
+                continue
+            try:
+                os.remove(item)
+                logger.info('Item deleted')
+            except FileNotFoundError:
+                logger.warning('Failed to deleteitem')
 
     def close(self):
         self.upload_to_s3()
         self.bot.save_responce()
         self.proj.requests = self.bot.total_requests
-        shutil.rmtree(self.bot.mediaDir, ignore_errors=False, onerror=None)
+        # shutil.rmtree(self.bot.mediaDir, ignore_errors=False, onerror=None)
         self.proj.save()
 
 @shared_task
 def load_user_posts(userid, count=10):
     LoadUserPosts(userid, count)
 
+from .models import Username
 
+class DailyTask:
+    def __init__(self, username='', **kwargs):
+        self.username = username
+        self.count = int(kwargs.get('count', 10))
+        self.forceLogin = kwargs.get('forceLogin', False)
+
+    def periodicCrawl(self):
+        names = Username.objects.all()
+        for user in names:
+            logger.info("The username is : " + user.name)
+            self.crawl_single_username(user.name)
+
+    def crawl_single_username(self, username):
+        logger.info('Loading user posts for {0}'.format(username))
+        proj = Project.objects.filter(active=True).last()
+        try:
+            bot = NoireBot(proj.username, proj.get_password, forceLogin=self.forceLogin)
+        except AttributeError:
+            logger.error("No active project in db")
+            return
+        usernameid = bot.convert_to_user_id(username)
+        logger.info("user id is + " + str(usernameid))
+        load_user_posts.delay(usernameid, self.count)
+
+@shared_task
+def daily_task():
+    dT = DailyTask()
+    dT.periodicCrawl()

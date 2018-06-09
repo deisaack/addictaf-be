@@ -30,7 +30,8 @@ def downloadVideo(self, media_id, filename, media=False):
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)
     # Download Hd video
-    response = self.s.get(clips[0]['url'], stream=True)
+    try:response = self.s.get(clips[1]['url'], stream=True)
+    except KeyError: response = self.s.get(clips[1]['url'], stream=True)
     if response.status_code == 200:
         with open(self.videosDir + filename, 'wb') as f:
             response.raw.decode_content = True
