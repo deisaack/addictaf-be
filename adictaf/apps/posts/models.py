@@ -7,17 +7,38 @@ from django.contrib.contenttypes.fields import GenericRelation
 from adictaf.utilities.managers import SafiBaseManager, Status
 from adictaf.utilities.common import id_generator
 
+class Category:
+    ADDICTAF = 'ADDICTAF'
+    SPORTSMEME = 'SPORTSMEME'
+
+
 class TagBlacklist(models.Model):
     name = models.CharField(max_length=50)
 
     def __str__(self):
         return self.name
 
+
 class Username(models.Model):
     name = models.CharField(max_length=50)
+    category = models.CharField(max_length=20)
 
     def __str__(self):
-        return self.name
+        return self.name + ' ' + self.category
+
+
+class BaseObj(models.Model):
+    name = models.CharField(max_length=50, primary_key=True, unique=True)
+    category = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.name + ' ' + self.category
+
+    class Meta:
+        abstract = True
+
+class HashTag(BaseObj):
+    pass
 
 class Post(models.Model):
     # id = models.CharField(primary_key=True, unique=True, validators=[MinValueValidator(1)])
@@ -29,7 +50,7 @@ class Post(models.Model):
     owner_id = models.BigIntegerField(null=True, blank=True, validators=[MinValueValidator(1)])
     tags = ArrayField(models.CharField(max_length=50), default=list)
     taged_users = ArrayField(models.CharField(max_length=50), default=list, size=50)
-    caption = models.CharField(null=True, blank=True, max_length=500)
+    caption = models.CharField(null=True, blank=True, max_length=5000)
     caption_tmp = models.TextField(null=True, blank=True)
     image = models.URLField(null=True, blank=True, max_length=1000)
     image_hd = models.ImageField(null=True, blank=True)
@@ -46,6 +67,7 @@ class Post(models.Model):
     activities = GenericRelation(Activity, blank=True, null=True, related_query_name='posts')
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     views = models.PositiveIntegerField(default=0)
+    category = models.CharField(max_length=20, default=Category.ADDICTAF)
 
     objects = SafiBaseManager()
 

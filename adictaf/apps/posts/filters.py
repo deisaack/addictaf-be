@@ -15,4 +15,5 @@ class PostFilter(filters.FilterSet):
             'timestamp': ['year__gt', 'gte'],
             'comments': ['lte', 'gte'],
             'created': ['exact', 'year__gt'],
+            'category': ['exact']
         }

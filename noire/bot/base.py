@@ -225,7 +225,6 @@ class NoireBot(object):
                 pass
             return False
 
-    
 
     def generateDeviceId(self, seed):
         volatile_seed = "12345"
@@ -288,7 +287,7 @@ class NoireBot(object):
             with open(self.userInfoFile) as json_file:
                 self.LastJson = json.load(json_file)
             data = self.LastJson.get('local_cache')
-            self.total_requests = data['total_requests']
+            # self.total_requests = data['total_requests']
             self.uuid = data['uuid']
             self.device_id = data['device_id']
             return True
@@ -838,11 +837,11 @@ class NoireBot(object):
                 return user_feed
             next_max_id = temp["next_max_id"]
 
-    def getTotalHashtagFeed(self, hashtagString, amount=100):
+    def getTotalHashtagFeed(self, hashtagString, count):
         hashtag_feed = []
         next_max_id = ''
 
-        with tqdm(total=amount, desc="Getting hashtag medias", leave=False) as pbar:
+        with tqdm(total=count, desc="Getting hashtag medias", leave=False) as pbar:
             while True:
                 self.getHashtagFeed(hashtagString, next_max_id)
                 temp = self.LastJson
@@ -850,10 +849,10 @@ class NoireBot(object):
                     pbar.update(len(temp["items"]))
                     for item in temp["items"]:
                         hashtag_feed.append(item)
-                    if len(temp["items"]) == 0 or len(hashtag_feed) >= amount:
-                        return hashtag_feed[:amount]
+                    if len(temp["items"]) == 0 or len(hashtag_feed) >= count:
+                        return hashtag_feed[:count]
                 except Exception:
-                    return hashtag_feed[:amount]
+                    return hashtag_feed[:count]
                 next_max_id = temp["next_max_id"]
 
     def getTotalSelfUserFeed(self, minTimestamp=None):

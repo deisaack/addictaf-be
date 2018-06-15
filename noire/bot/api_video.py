@@ -16,7 +16,7 @@ def downloadVideo(self, media_id, filename, media=False):
     if not media:
         self.mediaInfo(media_id)
         media = self.LastJson['items'][0]
-    filename = '{0}_{1}.mp4'.format(media['user']['username'], media_id) if not filename else '{0}.mp4'.format(filename)
+    filename = '{0}.mp4'.format(filename)
     try:
         clips = media['video_versions']
     except Exception:

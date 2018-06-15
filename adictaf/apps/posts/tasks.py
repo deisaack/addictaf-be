@@ -10,16 +10,18 @@ from django.conf import settings
 from adictaf.apps.core.models import Project
 from noire.bot.base import NoireBot
 
-from .models import Post
+from .models import Post, Status
 
 logger = logging.getLogger(__name__)
 import boto3
 import os
 import atexit
-import shutil
+import shutil, json
+
 
 class LoadUserPosts(object):
-    def __init__(self, userid, count):
+    def __init__(self, userid, category, count):
+        self.category = category
         self.userId = userid
         self.count = count
         self.item_count = 0
@@ -48,39 +50,34 @@ class LoadUserPosts(object):
                 self.next_max_id = self.bot.LastJson["next_max_id"]
                 self.more_available = True
             for item in items:
-                media_id=item["media_type"]
+                media_id = item["media_type"]
                 is_video = False
-                video_src=None
+                video_src = None
                 if media_id == 1:
                     img = item["image_versions2"]["candidates"][0]["url"]
-                    thum = item["image_versions2"]["candidates"][-1]["url"]
                 elif media_id == 2:
                     img = item["image_versions2"]["candidates"][0]["url"]
-                    thum = item["image_versions2"]["candidates"][-1]["url"]
                     is_video = True
                     video_src = item['video_versions'][-1]['url']
                 elif media_id == 8:
                     img = item["carousel_media"][0]["image_versions2"]["candidates"][0]["url"]
-                    thum = item["carousel_media"][0]["image_versions2"]["candidates"][-1]["url"]
                 else:
                     img = None
-                    thum = None
                     logger.warning('A new media id was found {0!}'.format(media_id))
 
                 post, created = Post.objects.update_or_create(
-                        id = item['pk'],
-                        defaults={
-                            "is_video": is_video,
-                            "video_src": video_src,
-                            "shortcode": item["code"],
-                            "comments": item["comment_count"],
-                            "likes": item["like_count"],
-                            "owner_id": item["user"]["pk"],
-                            "timestamp": datetime.fromtimestamp(item["taken_at"]).isoformat(),
-                        }
-                    )
-
-
+                    id=item['pk'],
+                    defaults={
+                        "is_video": is_video,
+                        "video_src": video_src,
+                        "shortcode": item["code"],
+                        "comments": item["comment_count"],
+                        "likes": item["like_count"],
+                        "owner_id": item["user"]["pk"],
+                        "timestamp": datetime.fromtimestamp(item["taken_at"]).isoformat(),
+                        'category': self.category
+                    }
+                )
 
                 try:
                     post.caption_tmp = item["caption"]["text"]
@@ -103,7 +100,7 @@ class LoadUserPosts(object):
                         img_filename = '{0}_{1}.jpg'.format(
                             item['user']['username'], item['pk']
                         )
-                        d = self.bot.downloadPhoto(img, img_filename, small_url=thum)
+                        d = self.bot.downloadPhoto(img, img_filename)
                         path = str(d).split('live')
                         img_url = path[-1][1:]
                         post.image = settings.CDN_URL + img_url
@@ -112,7 +109,7 @@ class LoadUserPosts(object):
 
             if not self.more_available:
                 break
-            time.sleep(random.random()*2)
+            time.sleep(random.random() * 2)
             self.item_count += len(items)
             # break
 
@@ -121,7 +118,7 @@ class LoadUserPosts(object):
         items = os.walk(settings.LIVE_DIR)
         for path, folders, files in items:
             all_files.add(path)
-        
+
             for file in files:
                 filename = path + '/' + file
                 all_files.add(filename)
@@ -148,29 +145,156 @@ class LoadUserPosts(object):
     def close(self):
         self.upload_to_s3()
         self.bot.save_responce()
-        self.proj.requests = self.bot.total_requests
+        self.proj.requests += self.bot.total_requests
         # shutil.rmtree(self.bot.mediaDir, ignore_errors=False, onerror=None)
         self.proj.save()
 
-@shared_task
-def load_user_posts(userid, count=10):
-    LoadUserPosts(userid, count)
 
-from .models import Username
+class LoadTagPosts(object):
+    def __init__(self, tag, category, count):
+        self.category = category
+        self.tag = tag
+        self.count = count
+        # self.next_max_id = ''
+        self.proj = Project.objects.filter(active=True).last()
+        self.bot = NoireBot(self.proj.username, self.proj.get_password)
+        # self.more_available = False
+        self.load()
+        self.close()
+        # atexit.register(self.close)
+        # atexit.register(self.upload_to_s3)
+
+    def load(self):
+        tag_posts = self.bot.getTotalHashtagFeed(self.tag, count=20)
+        logger.info('Loading tag posts for {0}'.format(self.tag))
+
+        with open(self.tag + '.json', 'w') as f:
+            json.dump(tag_posts, f, ensure_ascii=False, sort_keys=True, indent=4)
+
+        for item in tag_posts:
+            media_id = item["media_type"]
+            is_video = False
+            if media_id == 1:
+                img = item["image_versions2"]["candidates"][0]["url"]
+            elif media_id == 2:
+                img = item["image_versions2"]["candidates"][0]["url"]
+                is_video = True
+            elif media_id == 8:
+                img = item["carousel_media"][0]["image_versions2"]["candidates"][0]["url"]
+            else:
+                img = None
+                logger.warning('A new media id was found {0!}'.format(media_id))
+
+            post, created = Post.objects.update_or_create(
+                id=item['pk'],
+                defaults={
+                    "is_video": is_video,
+                    "shortcode": item["code"],
+                    "comments": item["comment_count"],
+                    "likes": item["like_count"],
+                    "owner_id": item["user"]["pk"],
+                    "timestamp": datetime.fromtimestamp(item["taken_at"]).isoformat(),
+                    'category': self.category
+                }
+            )
+
+            if created:
+                try:
+                    post.caption_tmp = item["caption"]["text"]
+                    post.save()
+                    post.create_tags_and_caption()
+                except:
+                    logger.warning('Probably Item has no caption')
+
+                if is_video:
+                    vid_filename = '{0}_{1}'.format(
+                        item['user']['username'], item['pk']
+                    )
+                    d = self.bot.downloadVideo(item['pk'], vid_filename, media=item)
+                    path = str(d).split('live')
+                    video_url = path[-1][1:]
+                    post.video = settings.CDN_URL + video_url
+                    post.video_sm = video_url.replace('videos/', 'videos/sm/')
+                    post.save()
+                if img is not None:
+                    img_filename = '{0}_{1}.jpg'.format(
+                        item['user']['username'], item['pk']
+                    )
+                    d = self.bot.downloadPhoto(img, img_filename)
+                    path = str(d).split('live')
+                    img_url = path[-1][1:]
+                    post.image = settings.CDN_URL + img_url
+                    post.image_sm = img_url.replace('photos/', 'photos/sm/')
+                    post.save()
+
+
+
+    def upload_to_s3(self):
+        all_files = set()
+        items = os.walk(settings.LIVE_DIR)
+        for path, folders, files in items:
+            all_files.add(path)
+
+            for file in files:
+                filename = path + '/' + file
+                all_files.add(filename)
+
+        all_files = list(all_files)
+        s3 = boto3.client('s3')
+        bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+        for key, item in enumerate(all_files):
+            if os.path.isdir(item):
+                continue
+            file_name = item.split('live')[-1][1:]
+            try:
+                s3.upload_file(item, bucket_name, file_name)
+            except Exception as e:
+                logger.error("Failed to upload file upload file due to {0!s}".format(e))
+                continue
+            if 'media' in item:
+                try:
+                    os.remove(item)
+                    logger.info('Item deleted')
+                except FileNotFoundError:
+                    logger.warning('Failed to deleteitem')
+
+    def close(self):
+        self.upload_to_s3()
+        self.bot.save_responce()
+        self.proj.requests += self.bot.total_requests
+        # shutil.rmtree(self.bot.mediaDir, ignore_errors=False, onerror=None)
+        self.proj.save()
+
+
+@shared_task
+def load_user_posts(userid, category, count):
+    LoadUserPosts(userid=userid, category=category, count=count)
+
+from .models import Username, HashTag
 
 class DailyTask:
-    def __init__(self, username='', **kwargs):
-        self.username = username
-        self.count = int(kwargs.get('count', 100))
+    def __init__(self, **kwargs):
+        self.count = int(kwargs.get('count', 10))
         self.forceLogin = kwargs.get('forceLogin', False)
+        self.category = kwargs.get('category', 'a')
 
     def periodicCrawl(self):
         names = Username.objects.all()
-        for user in names:
-            logger.info("The username is : " + user.name)
-            self.crawl_single_username(user.name)
+        # for user in names:
+        #     logger.info("The username is : " + user.name)
+        #     self.crawl_single_username(user.name, user.category)
+        #
+        tags = HashTag.objects.all()
+        for tag in tags:
+            logger.info("The #tag is {0}".format(tag))
+            self.crawl_single_tag(tag=tag.name, category=tag.category, count=self.count)
 
-    def crawl_single_username(self, username):
+
+    def crawl_single_tag(self, tag, category, count):
+        logger.info('Loading user posts for {0}'.format(tag))
+        LoadTagPosts(tag=tag, category=category, count=count)
+
+    def crawl_single_username(self, username, category):
         logger.info('Loading user posts for {0}'.format(username))
         proj = Project.objects.filter(active=True).last()
         try:
@@ -180,9 +304,10 @@ class DailyTask:
             return
         usernameid = bot.convert_to_user_id(username)
         logger.info("user id is + " + str(usernameid))
-        load_user_posts.delay(usernameid, self.count)
+        load_user_posts(userid=usernameid, category=category, count=self.count)
+        # load_user_posts.delay(userid=usernameid, category=category, count=self.count)
 
 @shared_task
 def daily_task():
-    dT = DailyTask()
+    dT = DailyTask(count=20)
     dT.periodicCrawl()

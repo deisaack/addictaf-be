@@ -1,3 +1,4 @@
 from django.test import TestCase
 
-# Create your tests here.
+PUBLIC_MAILGUN_KEY='pubkey-72b94af8582e38dc38594470dec5354f'
+PRIVATE_MAILGUN_KEY='3b1b68459e5b1ceaf8154a0c1202b325-b6183ad4-e25d8ea3'
