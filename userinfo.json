@@ -1,0 +1,31 @@
+{
+    "local_cache": {
+        "device_id": "android-a3140618eb9b490f",
+        "total_requests": 1,
+        "uuid": "b3761e0a-92d7-4498-bdc9-1aba626d0d9b"
+    },
+    "logged_in_user": {
+        "allow_contacts_sync": false,
+        "allowed_commenter_type": "any",
+        "can_boost_post": false,
+        "can_see_organic_insights": false,
+        "full_name": "abdala mwasimba",
+        "has_anonymous_profile_picture": true,
+        "is_business": false,
+        "is_private": false,
+        "is_verified": false,
+        "nametag": {
+            "emoji": "😀",
+            "gradient": 0,
+            "mode": 1,
+            "selfie_sticker": 0
+        },
+        "phone_number": "",
+        "pk": 7579664429,
+        "profile_pic_url": "https://scontent.cdninstagram.com/vp/6bd6dcedfc8fa9ef41646b53d8811c0e/5BBBE67A/t51.2885-19/11906329_960233084022564_1448528159_a.jpg",
+        "reel_auto_archive": "unset",
+        "show_insights_terms": false,
+        "username": "abdalamwasimba"
+    },
+    "status": "ok"
+}
