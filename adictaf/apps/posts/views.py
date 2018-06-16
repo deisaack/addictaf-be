@@ -31,7 +31,7 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
     ordering = '-created'
     # filter_fields = ['is_video']
     filter_class = ft.PostFilter
-    
+
     @action(methods=['put'], detail=True)
     def upvote(self, request, pk=None):
         post = self.get_object()
