@@ -280,10 +280,10 @@ class DailyTask:
 
     def periodicCrawl(self):
         names = Username.objects.all()
-        # for user in names:
-        #     logger.info("The username is : " + user.name)
-        #     self.crawl_single_username(user.name, user.category)
-        #
+        for user in names:
+            logger.info("The username is : " + user.name)
+            self.crawl_single_username(user.name, user.category)
+
         tags = HashTag.objects.all()
         for tag in tags:
             logger.info("The #tag is {0}".format(tag))
@@ -309,5 +309,5 @@ class DailyTask:
 
 @shared_task
 def daily_task():
-    dT = DailyTask(count=20)
+    dT = DailyTask(count=50)
     dT.periodicCrawl()
