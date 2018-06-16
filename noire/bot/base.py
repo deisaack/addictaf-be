@@ -38,6 +38,8 @@ from .prepare import delete_credentials, get_credentials
 
 __all__ = ['NoireBot',]
 
+class NoireLoginException(RuntimeError):
+    pass
 
 class NoireBot(object):
     def __init__(self,
@@ -175,7 +177,8 @@ class NoireBot(object):
                     return True
                 else:
                     self.logger.info("Login or password is incorrect.")
-                    return False
+                    # return False
+                    raise NoireLoginException
 
     def SendRequest(self, endpoint, post=None, login=False):
         if (not self.isLoggedIn and not login):
