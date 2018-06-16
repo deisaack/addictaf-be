@@ -50,62 +50,64 @@ class LoadUserPosts(object):
                 self.next_max_id = self.bot.LastJson["next_max_id"]
                 self.more_available = True
             for item in items:
-                media_id = item["media_type"]
-                is_video = False
-                video_src = None
-                if media_id == 1:
-                    img = item["image_versions2"]["candidates"][0]["url"]
-                elif media_id == 2:
-                    img = item["image_versions2"]["candidates"][0]["url"]
-                    is_video = True
-                    video_src = item['video_versions'][-1]['url']
-                elif media_id == 8:
-                    img = item["carousel_media"][0]["image_versions2"]["candidates"][0]["url"]
-                else:
-                    img = None
-                    logger.warning('A new media id was found {0!}'.format(media_id))
-
-                post, created = Post.objects.update_or_create(
-                    id=item['pk'],
-                    defaults={
-                        "is_video": is_video,
-                        "video_src": video_src,
-                        "shortcode": item["code"],
-                        "comments": item["comment_count"],
-                        "likes": item["like_count"],
-                        "owner_id": item["user"]["pk"],
-                        "timestamp": datetime.fromtimestamp(item["taken_at"]).isoformat(),
-                        'category': self.category
-                    }
-                )
-
                 try:
-                    post.caption_tmp = item["caption"]["text"]
-                    post.save()
-                    post.create_tags_and_caption()
-                except:
-                    logger.warning('Probably Item has no caption')
-                if created:
-                    if is_video:
-                        vid_filename = '{0}_{1}'.format(
-                            item['user']['username'], item['pk']
-                        )
-                        d = self.bot.downloadVideo(item['pk'], vid_filename, media=item)
-                        path = str(d).split('live')
-                        video_url = path[-1][1:]
-                        post.video = settings.CDN_URL + video_url
-                        post.video_sm = video_url.replace('videos/', 'videos/sm/')
+                    media_id = item["media_type"]
+                    is_video = False
+                    video_src = None
+                    if media_id == 1:
+                        img = item["image_versions2"]["candidates"][0]["url"]
+                    elif media_id == 2:
+                        img = item["image_versions2"]["candidates"][0]["url"]
+                        is_video = True
+                        video_src = item['video_versions'][-1]['url']
+                    elif media_id == 8:
+                        img = item["carousel_media"][0]["image_versions2"]["candidates"][0]["url"]
+                    else:
+                        img = None
+                        logger.warning('A new media id was found {0!}'.format(media_id))
+
+                    post, created = Post.objects.update_or_create(
+                        id=item['pk'],
+                        defaults={
+                            "is_video": is_video,
+                            "video_src": video_src,
+                            "shortcode": item["code"],
+                            "comments": item["comment_count"],
+                            "likes": item["like_count"],
+                            "owner_id": item["user"]["pk"],
+                            "timestamp": datetime.fromtimestamp(item["taken_at"]).isoformat(),
+                            'category': self.category
+                        }
+                    )
+
+                    try:
+                        post.caption_tmp = item["caption"]["text"]
                         post.save()
-                    if img is not None:
-                        img_filename = '{0}_{1}.jpg'.format(
-                            item['user']['username'], item['pk']
-                        )
-                        d = self.bot.downloadPhoto(img, img_filename)
-                        path = str(d).split('live')
-                        img_url = path[-1][1:]
-                        post.image = settings.CDN_URL + img_url
-                        post.image_sm = img_url.replace('photos/', 'photos/sm/')
-                        post.save()
+                        post.create_tags_and_caption()
+                    except:
+                        logger.warning('Probably Item has no caption')
+                    if created:
+                        if is_video:
+                            vid_filename = '{0}_{1}'.format(
+                                item['user']['username'], item['pk']
+                            )
+                            d = self.bot.downloadVideo(item['pk'], vid_filename, media=item)
+                            path = str(d).split('live')
+                            video_url = path[-1][1:]
+                            post.video = settings.CDN_URL + video_url
+                            post.video_sm = video_url.replace('videos/', 'videos/sm/')
+                            post.save()
+                        if img is not None:
+                            img_filename = '{0}_{1}.jpg'.format(
+                                item['user']['username'], item['pk']
+                            )
+                            d = self.bot.downloadPhoto(img, img_filename)
+                            path = str(d).split('live')
+                            img_url = path[-1][1:]
+                            post.image = settings.CDN_URL + img_url
+                            post.image_sm = img_url.replace('photos/', 'photos/sm/')
+                            post.save()
+                except: pass
 
             if not self.more_available:
                 break
@@ -172,60 +174,63 @@ class LoadTagPosts(object):
             json.dump(tag_posts, f, ensure_ascii=False, sort_keys=True, indent=4)
 
         for item in tag_posts:
-            media_id = item["media_type"]
-            is_video = False
-            if media_id == 1:
-                img = item["image_versions2"]["candidates"][0]["url"]
-            elif media_id == 2:
-                img = item["image_versions2"]["candidates"][0]["url"]
-                is_video = True
-            elif media_id == 8:
-                img = item["carousel_media"][0]["image_versions2"]["candidates"][0]["url"]
-            else:
-                img = None
-                logger.warning('A new media id was found {0!}'.format(media_id))
+            try:
+                media_id = item["media_type"]
+                is_video = False
+                if media_id == 1:
+                    img = item["image_versions2"]["candidates"][0]["url"]
+                elif media_id == 2:
+                    img = item["image_versions2"]["candidates"][0]["url"]
+                    is_video = True
+                elif media_id == 8:
+                    img = item["carousel_media"][0]["image_versions2"]["candidates"][0]["url"]
+                else:
+                    img = None
+                    logger.warning('A new media id was found {0!}'.format(media_id))
 
-            post, created = Post.objects.update_or_create(
-                id=item['pk'],
-                defaults={
-                    "is_video": is_video,
-                    "shortcode": item["code"],
-                    "comments": item["comment_count"],
-                    "likes": item["like_count"],
-                    "owner_id": item["user"]["pk"],
-                    "timestamp": datetime.fromtimestamp(item["taken_at"]).isoformat(),
-                    'category': self.category
-                }
-            )
+                post, created = Post.objects.update_or_create(
+                    id=item['pk'],
+                    defaults={
+                        "is_video": is_video,
+                        "shortcode": item["code"],
+                        "comments": item["comment_count"],
+                        "likes": item["like_count"],
+                        "owner_id": item["user"]["pk"],
+                        "timestamp": datetime.fromtimestamp(item["taken_at"]).isoformat(),
+                        'category': self.category
+                    }
+                )
 
-            if created:
-                try:
-                    post.caption_tmp = item["caption"]["text"]
-                    post.save()
-                    post.create_tags_and_caption()
-                except:
-                    logger.warning('Probably Item has no caption')
+                if created:
+                    try:
+                        post.caption_tmp = item["caption"]["text"]
+                        post.save()
+                        post.create_tags_and_caption()
+                    except:
+                        logger.warning('Probably Item has no caption')
 
-                if is_video:
-                    vid_filename = '{0}_{1}'.format(
-                        item['user']['username'], item['pk']
-                    )
-                    d = self.bot.downloadVideo(item['pk'], vid_filename, media=item)
-                    path = str(d).split('live')
-                    video_url = path[-1][1:]
-                    post.video = settings.CDN_URL + video_url
-                    post.video_sm = video_url.replace('videos/', 'videos/sm/')
-                    post.save()
-                if img is not None:
-                    img_filename = '{0}_{1}.jpg'.format(
-                        item['user']['username'], item['pk']
-                    )
-                    d = self.bot.downloadPhoto(img, img_filename)
-                    path = str(d).split('live')
-                    img_url = path[-1][1:]
-                    post.image = settings.CDN_URL + img_url
-                    post.image_sm = img_url.replace('photos/', 'photos/sm/')
-                    post.save()
+                    if is_video:
+                        vid_filename = '{0}_{1}'.format(
+                            item['user']['username'], item['pk']
+                        )
+                        d = self.bot.downloadVideo(item['pk'], vid_filename, media=item)
+                        path = str(d).split('live')
+                        video_url = path[-1][1:]
+                        post.video = settings.CDN_URL + video_url
+                        post.video_sm = video_url.replace('videos/', 'videos/sm/')
+                        post.save()
+                    if img is not None:
+                        img_filename = '{0}_{1}.jpg'.format(
+                            item['user']['username'], item['pk']
+                        )
+                        d = self.bot.downloadPhoto(img, img_filename)
+                        path = str(d).split('live')
+                        img_url = path[-1][1:]
+                        post.image = settings.CDN_URL + img_url
+                        post.image_sm = img_url.replace('photos/', 'photos/sm/')
+                        post.save()
+
+            except: pass
 
 
 
