@@ -89,16 +89,16 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self, *args, **kwargs):
         queryset_list = super(PostViewset, self).get_queryset(*args, **kwargs)
         tags = self.request.GET.get('tags', None)
-        category = self.request.GET.get('category', None)
+        choise = self.request.GET.get('category', None)
         if tags is not None:
             try:
                 tags=tags.split(',')
                 queryset_list = queryset_list.filter(tags__overlap=tags)
             except:
                 pass
-        if category == 'hot':
+        if choise == 'hot':
             queryset_list = queryset_list.order_by('-views')
-        if category == 'trending':
+        if choise == 'trending':
             queryset_list = queryset_list.order_by('-up_votes')
         return queryset_list
 

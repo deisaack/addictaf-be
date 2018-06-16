@@ -304,7 +304,8 @@ class DailyTask:
             return
         usernameid = bot.convert_to_user_id(username)
         logger.info("user id is + " + str(usernameid))
-        load_user_posts(userid=usernameid, category=category, count=self.count)
+        LoadUserPosts(userid=usernameid, category=category, count=self.count)
+        # load_user_posts(userid=usernameid, category=category, count=self.count)
         # load_user_posts.delay(userid=usernameid, category=category, count=self.count)
 
 @shared_task
