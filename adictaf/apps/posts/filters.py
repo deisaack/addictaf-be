@@ -13,7 +13,6 @@ class PostFilter(filters.FilterSet):
             'is_video': ['exact'],
             'likes': ['lte', 'gte'],
             'timestamp': ['year__gt', 'gte'],
-            'comments': ['lte', 'gte'],
             'created': ['exact', 'year__gt'],
             'category': ['exact']
         }

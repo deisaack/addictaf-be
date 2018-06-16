@@ -19,7 +19,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from django.db.models.expressions import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-
+from . import filters as ft
 logger = logging.getLogger(__name__)
 
 class PostViewset(viewsets.ReadOnlyModelViewSet):
@@ -29,8 +29,9 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
     ordering_fields = ['created']
     ordering = '-created'
-    filter_fields = ['is_video']
-
+    # filter_fields = ['is_video']
+    filter_class = ft.PostFilter
+    
     @action(methods=['put'], detail=True)
     def upvote(self, request, pk=None):
         post = self.get_object()
