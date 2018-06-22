@@ -44,14 +44,14 @@ def get_gags(count, category, url):
                 video = None
                 if obj['type'] == 'Animated':
                     isVideo= True
-                    video = obj['images']['image460sv']
+                    video = obj['images']['image460sv']['url']
                 post, created = Post.objects.update_or_create(
                     gag_id = obj['id'],
                     defaults={
                         'id': random.randint(1000, 100000000),
                         'caption': obj['title'],
                         'is_video': isVideo,
-                        'image': obj['images']['image700'],
+                        'image': obj['images']['image700']['url'],
                         'video': video,
                         'category': category
                     }
