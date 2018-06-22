@@ -1,6 +1,9 @@
 from rest_framework import serializers
+
 from adictaf.apps.activities.models import Activity
+
 from .models import Post
+
 # import re
 
 

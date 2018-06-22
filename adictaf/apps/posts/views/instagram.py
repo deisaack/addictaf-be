@@ -1,25 +1,30 @@
+from __future__ import absolute_import
+
 import logging
+from collections import OrderedDict
 
 from django.db import transaction
+from django.db.models.expressions import Q
 from django.shortcuts import get_object_or_404, render
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from adictaf.apps.activities.models import Activity
 from adictaf.apps.core.models import Project
+from adictaf.utilities.common import request_ip
 from adictaf.utilities.permissions import AdictAFAdminOrReadOnly
 from noire.bot.base import NoireBot
-from adictaf.apps.activities.models import Activity
-from adictaf.utilities.common import request_ip
-from . import serializers as sz
-from .models import Post
-from .tasks import load_user_posts
-from django.db import transaction
-from rest_framework.decorators import action, api_view, permission_classes
-from django.db.models.expressions import Q
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter, OrderingFilter
-from . import filters as ft
+
+from .. import filters as ft
+from .. import serializers as sz
+from .. import tasks
+from ..models import Post
+from ..tasks import load_user_posts
+
 logger = logging.getLogger(__name__)
 
 class PostViewset(viewsets.ReadOnlyModelViewSet):
@@ -108,7 +113,6 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
         obj.save()
         return super(PostViewset, self).retrieve(*args, **kwargs)
 
-from collections import OrderedDict
 
 class UserViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
@@ -149,8 +153,8 @@ def crawl_username(request):
     usernameid = bot.convert_to_user_id(username)
     load_user_posts.delay(usernameid, int(count))
     return Response({"success": "data is being loaded"})
+from ..models import GagLink
 
-from . import tasks
 @api_view(['GET'])
 def periodicCrawl(request):
     tasks.daily_task.delay()
@@ -183,4 +187,3 @@ def all_tags(request):
         resp_items.append(item)
         i+= 1
     return Response(resp_items)
-

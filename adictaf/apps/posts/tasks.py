@@ -1,23 +1,69 @@
+import atexit
+import json
 import logging
 import os
 import random
+import shutil
 import time
 from datetime import datetime
 
+import boto3
 from celery import shared_task
 from django.conf import settings
 
 from adictaf.apps.core.models import Project
 from noire.bot.base import NoireBot
 
-from .models import Post, Status
+from .models import HashTag, Post, Status, Username
 
 logger = logging.getLogger(__name__)
-import boto3
-import os
-import atexit
-import shutil, json
 
+import random
+import requests
+# from .models import Post
+
+from django.core.exceptions import MultipleObjectsReturned
+def get_gags(count, category, url):
+    s=requests.session()
+    step = 0
+    while step < count:
+        path = url + '?c=' + str(step)
+        resp = s.get(path)
+        step += 10
+        try:
+            data = resp.json()
+        except:
+            continue
+        try:
+            objects = data['data']['posts']
+        except:
+            continue
+        for obj in objects:
+            try:
+                isVideo = False
+                video = None
+                if obj['type'] == 'Animated':
+                    isVideo= True
+                    video = obj['images']['image460sv']
+                post, created = Post.objects.update_or_create(
+                    gag_id = obj['id'],
+                    defaults={
+                        'id': random.randint(1000, 100000000),
+                        'caption': obj['title'],
+                        'is_video': isVideo,
+                        'image': obj['images']['image700'],
+                        'video': video,
+                        'category': category
+                    }
+                )
+            except MultipleObjectsReturned: pass
+            except: raise
+
+from .models import GagLink
+def crawl_gags():
+    links = GagLink.objects.all()
+    for link in links:
+        get_gags(count=200, category=link.category, url=link.path)
 
 class LoadUserPosts(object):
     def __init__(self, userid, category, count):
@@ -275,7 +321,6 @@ class LoadTagPosts(object):
 def load_user_posts(userid, category, count):
     LoadUserPosts(userid=userid, category=category, count=count)
 
-from .models import Username, HashTag
 
 class DailyTask:
     def __init__(self, **kwargs):
@@ -315,5 +360,6 @@ class DailyTask:
 
 @shared_task
 def daily_task():
-    dT = DailyTask(count=50)
-    dT.periodicCrawl()
+    # dT = DailyTask(count=50)
+    # dT.periodicCrawl()
+    crawl_gags()

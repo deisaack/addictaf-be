@@ -3,20 +3,20 @@ import hashlib
 import hmac
 import os
 import time
+from datetime import timedelta, timezone
 
 from django.conf import settings
-from rest_framework import authentication, permissions, status
-from rest_framework.response import Response
-
-from .models import FileItem
 from django.views.generic.edit import CreateView
-
-from .models import Document
-from rest_framework.views import  APIView
-from datetime import timedelta, timezone
-from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.decorators import api_view, parser_classes, permission_classes
+from rest_framework import authentication, permissions, status
+from rest_framework.decorators import (api_view, parser_classes,
+                                       permission_classes)
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .models import Document, FileItem
+
 
 @api_view(['POST'])
 @parser_classes((MultiPartParser, FormParser))
@@ -169,4 +169,3 @@ class FileUploadCompleteHandler(APIView):
          data['id'] = obj.id
          data['saved'] = True
      return Response(data, status=status.HTTP_200_OK)
-

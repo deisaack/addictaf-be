@@ -1,11 +1,12 @@
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
 from django.db import models
-from adictaf.apps.activities.models import Activity
-from django.contrib.contenttypes.fields import GenericRelation
 
-from adictaf.utilities.managers import SafiBaseManager, Status
+from adictaf.apps.activities.models import Activity
 from adictaf.utilities.common import id_generator
+from adictaf.utilities.managers import SafiBaseManager, Status
+
 
 class Category:
     ADDICTAF = 'ADDICTAF'
@@ -25,6 +26,13 @@ class Username(models.Model):
 
     def __str__(self):
         return self.name + ' ' + self.category
+
+class GagLink(models.Model):
+    path = models.CharField(max_length=50)
+    category = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.path + ' > ' + self.category
 
 
 class BaseObj(models.Model):
@@ -67,6 +75,7 @@ class Post(models.Model):
     activities = GenericRelation(Activity, blank=True, null=True, related_query_name='posts')
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     views = models.PositiveIntegerField(default=0)
+    gag_id = models.CharField(max_length=100, blank=True)
     category = models.CharField(max_length=20, default=Category.ADDICTAF)
 
     objects = SafiBaseManager()
@@ -106,4 +115,3 @@ class Post(models.Model):
         self.tags=v_tags
         self.caption = ' ' .join(text)
         self.save()
-
