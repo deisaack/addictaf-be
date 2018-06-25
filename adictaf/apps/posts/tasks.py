@@ -74,7 +74,7 @@ def crawl_gags():
     logger.info('There are {0} gags'.format(len(links)))
     for link in links:
         get_gags(count=200, category=link.category, url=link.path)
-        logger.info('Getting '+ links.path + ' ')
+        logger.info('Getting '+ link.path + ' ')
 
 class LoadUserPosts(object):
     def __init__(self, userid, category, count):
