@@ -23,6 +23,10 @@ import requests
 # from .models import Post
 
 from django.core.exceptions import MultipleObjectsReturned
+
+def check(gag_id):
+    return Post.objects.exclude(gag_id__iexact=gag_id).exists()
+
 def get_gags(count, category, url):
     s=requests.session()
     step = 0
@@ -39,25 +43,26 @@ def get_gags(count, category, url):
         except:
             continue
         for obj in objects:
-            try:
-                isVideo = False
-                video = None
-                if obj['type'] == 'Animated':
-                    isVideo= True
-                    video = obj['images']['image460sv']['url']
-                post, created = Post.objects.update_or_create(
-                    gag_id = obj['id'],
-                    defaults={
-                        'id': random.randint(1000, 100000000),
-                        'caption': obj['title'],
-                        'is_video': isVideo,
-                        'image': obj['images']['image700']['url'],
-                        'video': video,
-                        'category': category
-                    }
-                )
-            except MultipleObjectsReturned: pass
-            except: raise
+            if not check(obj['id']):
+                try:
+                    isVideo = False
+                    video = None
+                    if obj['type'] == 'Animated':
+                        isVideo= True
+                        video = obj['images']['image460sv']['url']
+                    post, created = Post.objects.update_or_create(
+                        gag_id = obj['id'],
+                        defaults={
+                            'id': random.randint(1000, 100000000),
+                            'caption': obj['title'],
+                            'is_video': isVideo,
+                            'image': obj['images']['image700']['url'],
+                            'video': video,
+                            'category': category
+                        }
+                    )
+                except MultipleObjectsReturned: pass
+                except: raise
 
 from .models import GagLink
 def crawl_gags():
