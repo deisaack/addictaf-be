@@ -25,7 +25,7 @@ import requests
 from django.core.exceptions import MultipleObjectsReturned
 
 def check(gag_id):
-    return Post.objects.exclude(gag_id__iexact=gag_id).exists()
+    return Post.objects.filter(gag_id__iexact=gag_id).exists()
 
 def get_gags(count, category, url):
     s=requests.session()
@@ -37,11 +37,14 @@ def get_gags(count, category, url):
         try:
             data = resp.json()
         except:
+            logger.warning('The data.json was not there for {0}'.format(url))
             continue
         try:
             objects = data['data']['posts']
         except:
+            logger.error("Posts key is not there")
             continue
+
         for obj in objects:
             if not check(obj['id']):
                 try:
@@ -66,9 +69,12 @@ def get_gags(count, category, url):
 
 from .models import GagLink
 def crawl_gags():
+    logger.info('Crawling gags')
     links = GagLink.objects.all()
+    logger.info('There are {0} gags'.format(len(links)))
     for link in links:
         get_gags(count=200, category=link.category, url=link.path)
+        logger.info('Getting '+ links.path + ' ')
 
 class LoadUserPosts(object):
     def __init__(self, userid, category, count):
