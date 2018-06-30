@@ -174,27 +174,29 @@ def all_tags(request):
     for post in Post.objects.filter(category=category):
         list_all.extend(post.tags)
 
-    tags = {}
-    for i in list_all:
-        if not i in tags:
-            tags[i] = 1
-            continue
-        tags[i] += 1
-    # list_all=set(list_all)
-    # obj = {}
-    # for item in list_all:
-    #     item=item.lower()
-    #     if not item in obj:
-    #         obj[item] = 1
+    # tags = {}
+    # for i in list_all:
+    #     if not i in tags:
+    #         tags[i] = 1
     #         continue
-    #     obj[item] += 1
-    # sorted_by_value = OrderedDict(sorted(obj.items(), key=lambda x: x[1]))
-    # resp_items=[]
-    # i=0
-    # for item in reversed(sorted_by_value):
-    #     if i >= count:
-    #         break
-    #     resp_items.append(item)
-    #     i+= 1
-    # return Response(resp_items)
-    return Response(tags)
+    #     tags[i] += 1
+    #
+    # all_values = sorted(tags.values())
+    list_all=set(list_all)
+    obj = {}
+    for item in list_all:
+        item=item.lower()
+        if not item in obj:
+            obj[item] = 1
+            continue
+        obj[item] += 1
+    sorted_by_value = OrderedDict(sorted(obj.items(), key=lambda x: x[1]))
+    resp_items=[]
+    i=0
+    for item in reversed(sorted_by_value):
+        if i >= count:
+            break
+        resp_items.append(item)
+        i+= 1
+    return Response(resp_items)
+    # return Response(tags)
