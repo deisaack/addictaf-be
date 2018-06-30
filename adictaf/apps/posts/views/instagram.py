@@ -189,3 +189,4 @@ def all_tags(request):
         resp_items.append(item)
         i+= 1
     return Response(resp_items)
+

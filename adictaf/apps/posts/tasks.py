@@ -50,6 +50,9 @@ def get_gags(count, category, url):
                 try:
                     isVideo = False
                     video = None
+                    tags = []
+                    for tag in obj['tags']:
+                        tags.append(tag['key'])
                     if obj['type'] == 'Animated':
                         isVideo= True
                         video = obj['images']['image460sv']['url']
@@ -61,7 +64,8 @@ def get_gags(count, category, url):
                             'is_video': isVideo,
                             'image': obj['images']['image700']['url'],
                             'video': video,
-                            'category': category
+                            'category': category,
+                            'tags': tags
                         }
                     )
                 except MultipleObjectsReturned: pass
@@ -374,3 +378,5 @@ def daily_task():
     # dT = DailyTask(count=50)
     # dT.periodicCrawl()
     crawl_gags()
+
+
