@@ -193,7 +193,7 @@ def all_tags(request):
     sorted_by_value = OrderedDict(sorted(obj.items(), key=lambda x: x[1]))
     resp_items=[]
     i=0
-    for item in reversed(sorted_by_value):
+    for item in sorted_by_value:
         if i >= count:
             break
         resp_items.append(item)
