@@ -160,33 +160,41 @@ def periodicCrawl(request):
     tasks.daily_task.delay()
     # tasks.daily_task()
     return Response({"success": "request accepted"}, status=status.HTTP_202_ACCEPTED)
-
+from ..models import Category
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def all_tags(request):
     count= request.GET.get('count', 10)
+    category= request.GET.get('category', Category.ADDICTAF)
     try: count = int(count)
     except: count = 10
     if count > 100:
         count=100
     list_all=[]
-    for post in Post.objects.all():
+    for post in Post.objects.filter(category=category):
         list_all.extend(post.tags)
-    list_all=set(list_all)
-    obj = {}
-    for item in list_all:
-        item=item.lower()
-        if not item in obj:
-            obj[item] = 1
-            continue
-        obj[item] += 1
-    sorted_by_value = OrderedDict(sorted(obj.items(), key=lambda x: x[1]))
-    resp_items=[]
-    i=0
-    for item in reversed(sorted_by_value):
-        if i >= count:
-            break
-        resp_items.append(item)
-        i+= 1
-    return Response(resp_items)
 
+    tags = {}
+    for i in list_all:
+        if not i in tags:
+            tags[i] = 1
+            continue
+        tags[i] += 1
+    # list_all=set(list_all)
+    # obj = {}
+    # for item in list_all:
+    #     item=item.lower()
+    #     if not item in obj:
+    #         obj[item] = 1
+    #         continue
+    #     obj[item] += 1
+    # sorted_by_value = OrderedDict(sorted(obj.items(), key=lambda x: x[1]))
+    # resp_items=[]
+    # i=0
+    # for item in reversed(sorted_by_value):
+    #     if i >= count:
+    #         break
+    #     resp_items.append(item)
+    #     i+= 1
+    # return Response(resp_items)
+    return Response(tags)
