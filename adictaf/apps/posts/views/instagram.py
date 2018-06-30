@@ -164,7 +164,9 @@ def periodicCrawl(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def all_tags(request):
-    count= request.GET.get('count', 20)
+    count= request.GET.get('count', 10)
+    try: count = int(count)
+    except: count = 10
     if count > 100:
         count=100
     list_all=[]
