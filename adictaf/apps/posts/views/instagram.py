@@ -22,7 +22,7 @@ from noire.bot.base import NoireBot
 from .. import filters as ft
 from .. import serializers as sz
 from .. import tasks
-from ..models import Post
+from ..models import Category, GagLink, Post
 from ..tasks import load_user_posts
 
 logger = logging.getLogger(__name__)
@@ -153,14 +153,12 @@ def crawl_username(request):
     usernameid = bot.convert_to_user_id(username)
     load_user_posts.delay(usernameid, int(count))
     return Response({"success": "data is being loaded"})
-from ..models import GagLink
 
 @api_view(['GET'])
 def periodicCrawl(request):
     tasks.daily_task.delay()
     # tasks.daily_task()
     return Response({"success": "request accepted"}, status=status.HTTP_202_ACCEPTED)
-from ..models import Category
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def all_tags(request):

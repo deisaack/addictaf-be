@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from .models import HashTag, Post, TagBlacklist, Username
-from .models import GagLink
+from .models import GagLink, HashTag, Post, TagBlacklist, Username
+
 
 class PostAdmin(admin.ModelAdmin):
     list_display = ['id', "image_hd", 'is_video', 'gag_id', 'created']
@@ -11,4 +11,3 @@ admin.site.register(Username)
 admin.site.register(HashTag)
 admin.site.register(TagBlacklist)
 admin.site.register(Post, PostAdmin)
-

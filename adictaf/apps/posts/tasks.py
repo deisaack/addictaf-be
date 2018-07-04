@@ -8,24 +8,59 @@ import time
 from datetime import datetime
 
 import boto3
+import requests
 from celery import shared_task
 from django.conf import settings
+from django.core.exceptions import MultipleObjectsReturned
 
 from adictaf.apps.core.models import Project
 from noire.bot.base import NoireBot
 
-from .models import HashTag, Post, Status, Username
+from .models import GagLink, HashTag, Post, Status, Username
 
 logger = logging.getLogger(__name__)
 
-import random
-import requests
 # from .models import Post
 
-from django.core.exceptions import MultipleObjectsReturned
 
-def check(gag_id):
-    return Post.objects.filter(gag_id__iexact=gag_id).exists()
+def processObj(obj, category):
+    if Post.objects.filter(gag_id__iexact=obj['id']).exists():
+        return False
+    try:
+        isVideo = False
+        video = None
+        tags = []
+        for tag in obj['tags']:
+            tags.append(tag['key'])
+        if obj['type'] == 'Animated':
+            isVideo = True
+            video = obj['images']['image460sv']['url']
+        post, created = Post.objects.update_or_create(
+            gag_id=obj['id'],
+            defaults={
+                'id': random.randint(1000, 100000000),
+                'caption': obj['title'],
+                'is_video': isVideo,
+                'image': obj['images']['image460']['url'],
+                'video': video,
+                'category': category,
+                'tags': tags
+            }
+        )
+    except MultipleObjectsReturned:
+        pass
+    except:
+        raise
+
+def find_gag():
+    r = requests.get('https://m.9gag.com/football/hot',
+                     headers={"Accept": "application/json", 'X-Requested-With': 'XMLHttpRequest'}
+                     )
+    data = r.json()['data']['posts']
+    for obj in data:
+        processObj(obj, category='SPORTSMEME')
+    return True
+
 
 def get_gags(count, category, url):
     s=requests.session()
@@ -46,32 +81,9 @@ def get_gags(count, category, url):
             continue
 
         for obj in objects:
-            if not check(obj['id']):
-                try:
-                    isVideo = False
-                    video = None
-                    tags = []
-                    for tag in obj['tags']:
-                        tags.append(tag['key'])
-                    if obj['type'] == 'Animated':
-                        isVideo= True
-                        video = obj['images']['image460sv']['url']
-                    post, created = Post.objects.update_or_create(
-                        gag_id = obj['id'],
-                        defaults={
-                            'id': random.randint(1000, 100000000),
-                            'caption': obj['title'],
-                            'is_video': isVideo,
-                            'image': obj['images']['image700']['url'],
-                            'video': video,
-                            'category': category,
-                            'tags': tags
-                        }
-                    )
-                except MultipleObjectsReturned: pass
-                except: raise
+            processObj(obj, category)
+    return True
 
-from .models import GagLink
 def crawl_gags():
     logger.info('Crawling gags')
     links = GagLink.objects.all()
@@ -378,5 +390,4 @@ def daily_task():
     # dT = DailyTask(count=50)
     # dT.periodicCrawl()
     crawl_gags()
-
-
+    find_gag()
