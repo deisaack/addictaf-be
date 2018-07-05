@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     'storages',
 
 ]
+
 EXPIRY = config('JWT_EXPIRATION_DELTA', 15, cast=int)
 
 JWT_AUTH = {

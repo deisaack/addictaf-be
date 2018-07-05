@@ -1,5 +1,8 @@
 from django.shortcuts import render_to_response
-from django.template import RequestContext
+from django.views.generic import TemplateView
+
+class Policy(TemplateView):
+    template_name = 'policy.html'
 
 
 def handler404(request, exception, template_name='404.html'):
