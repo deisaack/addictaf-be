@@ -2,6 +2,7 @@ from django.db import models
 
 from adictaf.utilities.crypto import SafiCrypto
 
+from django.contrib.postgres.fields import ArrayField, JSONField
 
 class Project(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -9,6 +10,13 @@ class Project(models.Model):
     password = models.CharField(max_length=300, blank=True)
     active = models.BooleanField(default=False)
     requests = models.PositiveIntegerField(default=0)
+    max_session_time = models.PositiveIntegerField(default=1000000)
+    force_login = models.BooleanField(default=False)
+    proxy= models.CharField(max_length=1000, blank=True)
+    last_json = JSONField(blank=True, null=True)
+    uuid = models.UUIDField(blank=True, null=True)
+    device_id = models.CharField(blank=True, max_length=100)
+    user_id = models.BigIntegerField(default=0)
 
     def set_password(self, password):
         s=SafiCrypto()
@@ -24,6 +32,10 @@ class Project(models.Model):
 
     def check_password(self, password):
         return self.get_password == password
+
+    @property
+    def rank_token(self):
+        return "%s_%s" % (self.user_id, self.uuid)
 
 
 class Advert(models.Model):
