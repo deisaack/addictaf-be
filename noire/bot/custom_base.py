@@ -320,8 +320,8 @@ class NoireBot(object):
 
     def removeSelftag(self, mediaId):
         data = json.dumps({
-            '_uuid': self.uuid,
-            '_uid': self.user_id,
+            '_uuid': self.project.get_uuid(),
+            '_uid': self.project.get_uuid(),
             '_csrftoken': self.token
         })
         return self.SendRequest('media/' + str(mediaId) + '/remove/', self.generateSignature(data))

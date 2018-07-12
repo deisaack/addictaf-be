@@ -386,5 +386,5 @@ class DailyTask:
 def daily_task():
     dT = DailyTask(count=50)
     dT.periodicCrawl()
-    # crawl_gags()
-    # find_gag()
+    crawl_gags()
+    find_gag()
