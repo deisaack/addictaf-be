@@ -14,7 +14,7 @@ from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 
 from adictaf.apps.core.models import Project
-from noire.bot.base import NoireBot
+from noire.bot.custom_base import NoireBot
 
 from .models import GagLink, HashTag, Post, Status, Username
 
@@ -100,10 +100,11 @@ class LoadUserPosts(object):
         self.item_count = 0
         self.next_max_id = ''
         self.proj = Project.objects.filter(active=True).last()
-        self.bot = NoireBot(self.proj.username, self.proj.get_password)
+        self.bot = NoireBot(self.proj.id)
         self.more_available = False
         self.load()
         self.close()
+
         # atexit.register(self.close)
         # atexit.register(self.upload_to_s3)
 
@@ -219,10 +220,7 @@ class LoadUserPosts(object):
 
     def close(self):
         self.upload_to_s3()
-        self.bot.save_responce()
-        self.proj.requests += self.bot.total_requests
         # shutil.rmtree(self.bot.mediaDir, ignore_errors=False, onerror=None)
-        self.proj.save()
 
 
 class LoadTagPosts(object):
@@ -232,7 +230,7 @@ class LoadTagPosts(object):
         self.count = count
         # self.next_max_id = ''
         self.proj = Project.objects.filter(active=True).last()
-        self.bot = NoireBot(self.proj.username, self.proj.get_password)
+        self.bot = NoireBot(self.proj.id)
         # self.more_available = False
         self.load()
         self.close()
@@ -366,7 +364,6 @@ class DailyTask:
             logger.info("The #tag is {0}".format(tag))
             self.crawl_single_tag(tag=tag.name, category=tag.category, count=self.count)
 
-
     def crawl_single_tag(self, tag, category, count):
         logger.info('Loading user posts for {0}'.format(tag))
         LoadTagPosts(tag=tag, category=category, count=count)
@@ -375,11 +372,11 @@ class DailyTask:
         logger.info('Loading user posts for {0}'.format(username))
         proj = Project.objects.filter(active=True).last()
         try:
-            bot = NoireBot(proj.username, proj.get_password, forceLogin=self.forceLogin)
+            bot = NoireBot(proj.id)
         except AttributeError:
             logger.error("No active project in db")
             return
-        usernameid = bot.convert_to_user_id(username)
+        usernameid = bot.get_userid_from_username(username)
         logger.info("user id is + " + str(usernameid))
         LoadUserPosts(userid=usernameid, category=category, count=self.count)
         # load_user_posts(userid=usernameid, category=category, count=self.count)
@@ -387,7 +384,7 @@ class DailyTask:
 
 @shared_task
 def daily_task():
-    # dT = DailyTask(count=50)
-    # dT.periodicCrawl()
-    crawl_gags()
-    find_gag()
+    dT = DailyTask(count=50)
+    dT.periodicCrawl()
+    # crawl_gags()
+    # find_gag()

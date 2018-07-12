@@ -55,7 +55,7 @@ def _filter_medias_not_commented(self, media_items):
     for media in media_items:
         if media.get('comment_count', 0) > 0 and media.get('comments'):
             my_comments = [comment for comment in media['comments']
-                           if comment['user_id'] == self.user_id]
+                           if comment['user_id'] == self.project.user_id]
             if my_comments:
                 continue
         not_commented_medias.append(media)
@@ -128,13 +128,13 @@ def check_user(self, user_id, filter_closed_acc=False, unfollowing=False):
         self.console_print('\n\033[91m user_id in self.blacklist \033[0m')
         return False
 
-    if user_id == str(self.user_id):
+    if user_id == str(self.project.user_id):
         self.console_print('\n\033[92m user_id equals bot user_id, Skipping \033[0m')
         return False
 
     if not self.following:
         self.console_print('\n\033[92m Own following list is empty , downloading ...\033[0m')
-        self.following = self.get_user_following(self.user_id)
+        self.following = self.get_user_following(self.project.user_id)
     if user_id in self.following:
         if not unfollowing:
             # Log to Console

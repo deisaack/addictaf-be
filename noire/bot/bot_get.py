@@ -45,8 +45,8 @@ def get_timeline_medias(self, filtration=True):
     return self.filter_medias(self.LastJson["items"], filtration)
 
 
-def get_user_medias(self, user_id, filtration=True, is_comment=False):
-    user_id = self.convert_to_user_id(user_id)
+def get_user_medias(self, username, filtration=True, is_comment=False):
+    user_id = self.convert_to_user_id(username)
     self.getUserFeed(user_id)
     if self.LastJson["status"] == 'fail':
         self.logger.warning("This is a closed account.")

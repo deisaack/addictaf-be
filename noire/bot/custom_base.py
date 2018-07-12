@@ -84,7 +84,6 @@ class NoireBot(object):
         self.smPhotosDir = self.mediaDir + '/photos/sm/'
         self.videosDir = self.mediaDir + '/videos/'
         self.smVideosDir = self.mediaDir + '/videos/sm/'
-        self.token = None
         atexit.register(self.close)
         self.make_dirs()
         self.login()
@@ -115,7 +114,6 @@ class NoireBot(object):
             except requests.cookies.CookieConflictError:
                 raise
             self.s.headers.update({'X-CSRFToken': self.token})
-            self.token = self.token
             self.isLoggedIn = True
             log_string = 'Successfully logedin from cookies only'
             self.logger.info(log_string)
@@ -263,3 +261,99 @@ class NoireBot(object):
 
     def filter_medias(self, media_items, filtration=True, quiet=False, is_comment=False):
         return filter_medias(self, media_items, filtration, quiet, is_comment)
+
+
+    def configurePhoto(self, upload_id, photo, caption=''):
+        return configurePhoto(self, upload_id, photo, caption)
+
+
+    def expose(self):
+        data = json.dumps({
+            '_uuid': self.project.get_uuid(),
+            '_uid': self.project.user_id,
+            'id': self.project.user_id,
+            '_csrftoken': self.token,
+            'experiment': 'ig_android_profile_contextual_feed'
+        })
+        return self.SendRequest('qe/expose/', self.generateSignature(data))
+
+    def get_user_medias(self, username, filtration=True, is_comment=False):
+        return get_user_medias(self, username, filtration, is_comment)
+
+
+    def convert_to_user_id(self, usernames):
+        return convert_to_user_id(self, usernames)
+
+    def get_userid_from_username(self, username):
+        return get_userid_from_username(self, username)
+
+
+    def searchUsername(self, username):
+        return searchUsername(self, username)
+
+    def downloadPhoto(self, source_url, filename, **kwargs):
+        return downloadPhoto(self, source_url, filename, **kwargs)
+
+    # def downloadPhoto(self, media_id, filename, media=False, path='local/photos/'):
+    #     return downloadPhoto(self, media_id, filename, media, path)
+
+    def uploadVideo(self, photo, caption=None, upload_id=None):
+        return uploadVideo(self, photo, caption, upload_id)
+
+    def downloadVideo(self, media_id, filename, **kwargs):
+        return downloadVideo(self, media_id, filename, **kwargs)
+
+    # def settingsureVideo(self, upload_id, video, thumbnail, caption=''):
+    #     return settingsureVideo(self, upload_id, video, thumbnail, caption)
+
+    def configureVideo(self, upload_id, video, thumbnail, caption=''):
+        return configureVideo(self, upload_id, video, thumbnail, caption='')
+
+    def editMedia(self, mediaId, captionText=''):
+        data = json.dumps({
+            '_uuid': self.uuid,
+            '_uid': self.user_id,
+            '_csrftoken': self.token,
+            'caption_text': captionText
+        })
+        return self.SendRequest('media/' + str(mediaId) + '/edit_media/', self.generateSignature(data))
+
+    def removeSelftag(self, mediaId):
+        data = json.dumps({
+            '_uuid': self.uuid,
+            '_uid': self.user_id,
+            '_csrftoken': self.token
+        })
+        return self.SendRequest('media/' + str(mediaId) + '/remove/', self.generateSignature(data))
+
+    def mediaInfo(self, mediaId):
+        data = json.dumps({
+            '_uuid': self.project.get_uuid(),
+            '_uid': self.project.user_id,
+            '_csrftoken': self.project.token,
+            'media_id': mediaId
+        })
+        return self.SendRequest('media/' + str(mediaId) + '/info/', self.generateSignature(data))
+
+
+    def getTotalHashtagFeed(self, hashtagString, count):
+        hashtag_feed = []
+        next_max_id = ''
+
+        with tqdm(total=count, desc="Getting hashtag medias", leave=False) as pbar:
+            while True:
+                self.getHashtagFeed(hashtagString, next_max_id)
+                temp = self.LastJson
+                try:
+                    pbar.update(len(temp["items"]))
+                    for item in temp["items"]:
+                        hashtag_feed.append(item)
+                    if len(temp["items"]) == 0 or len(hashtag_feed) >= count:
+                        return hashtag_feed[:count]
+                except Exception:
+                    return hashtag_feed[:count]
+                next_max_id = temp["next_max_id"]
+
+    def getHashtagFeed(self, hashtagString, maxid=''):
+        return self.SendRequest('feed/tag/' + hashtagString + '/?max_id=' + str(
+            maxid) + '&rank_token=' + self.token + '&ranked_content=true&')

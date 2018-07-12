@@ -58,8 +58,8 @@ def configurePhoto(self, upload_id, photo, caption=''):
         '_csrftoken': self.token,
         'media_folder': 'Instagram',
         'source_type': 4,
-        '_uid': self.user_id,
-        '_uuid': self.uuid,
+        '_uid': self.project.user_id,
+        '_uuid': self.project.get_uuid(),
         'caption': caption,
         'upload_id': upload_id,
         'device': settings.NOIRE['DEVICE_SETTINTS'],
@@ -84,13 +84,13 @@ def uploadPhoto(self, photo, caption=None, upload_id=None):
         return False
     data = {
         'upload_id': upload_id,
-        '_uuid': self.uuid,
+        '_uuid': self.project.get_uuid(),
         '_csrftoken': self.token,
         'image_compression': '{"lib_name":"jt","lib_version":"1.3.0","quality":"87"}',
         'photo': ('pending_media_%s.jpg' % upload_id, open(photo, 'rb'), 'application/octet-stream', {'Content-Transfer-Encoding': 'binary'})
     }
 
-    m = MultipartEncoder(data, boundary=self.uuid)
+    m = MultipartEncoder(data, boundary=self.project.get_uuid())
     self.s.headers.update({'X-IG-Capabilities': '3Q4=',
                                  'X-IG-Connection-Type': 'WIFI',
                                  'Cookie2': '$Version=1',

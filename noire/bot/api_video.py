@@ -69,11 +69,11 @@ def uploadVideo(self, video, thumbnail, caption=None, upload_id=None):
         'upload_id': upload_id,
         '_csrftoken': self.token,
         'media_type': '2',
-        '_uuid': self.uuid,
+        '_uuid': self.project.uuid,
     }
     print('b')
 
-    m = MultipartEncoder(data, boundary=self.uuid)
+    m = MultipartEncoder(data, boundary=self.project.uuid)
     self.s.headers.update({'X-IG-Capabilities': '3Q4=',
                                  'X-IG-Connection-Type': 'WIFI',
                                  'Host': 'i.instagram.com',
@@ -164,8 +164,8 @@ def configureVideo(self, upload_id, video, thumbnail, caption=''):
         },
         'device': settings.NOIRE['DEVICE_SETTINTS'],
         '_csrftoken': self.token,
-        '_uuid': self.uuid,
-        '_uid': self.user_id,
+        '_uuid': self.project.uuid,
+        '_uid': self.project.user_id,
         'caption': caption,
     })
     return self.SendRequest('media/configure/?video=1', self.generateSignature(data))

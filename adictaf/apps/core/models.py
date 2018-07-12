@@ -17,6 +17,7 @@ class Project(models.Model):
     uuid = models.UUIDField(blank=True, null=True)
     device_id = models.CharField(blank=True, max_length=100)
     user_id = models.BigIntegerField(default=0)
+    max_likes_to_like = models.IntegerField(default=0)
 
     def set_password(self, password):
         s=SafiCrypto()
@@ -37,6 +38,12 @@ class Project(models.Model):
     def rank_token(self):
         return "%s_%s" % (self.user_id, self.uuid)
 
+    def get_uuid(self, uuid_type=False):
+        generated_uuid = str(self.uuid)
+        if (uuid_type):
+            return generated_uuid
+        else:
+            return generated_uuid.replace('-', '')
 
 class Advert(models.Model):
     title = models.CharField(max_length=50)
