@@ -311,8 +311,8 @@ class NoireBot(object):
 
     def editMedia(self, mediaId, captionText=''):
         data = json.dumps({
-            '_uuid': self.uuid,
-            '_uid': self.user_id,
+            '_uuid': self.project.get_uuid(),
+            '_uid': self.project.user_id,
             '_csrftoken': self.token,
             'caption_text': captionText
         })

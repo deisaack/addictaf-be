@@ -77,6 +77,7 @@ class Post(models.Model):
     views = models.PositiveIntegerField(default=0)
     gag_id = models.CharField(max_length=100, blank=True)
     category = models.CharField(max_length=20, default=Category.ADDICTAF)
+    is_posted = models.BooleanField(default=False)
 
     objects = SafiBaseManager()
 

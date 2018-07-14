@@ -156,8 +156,8 @@ def crawl_username(request):
 
 @api_view(['GET'])
 def periodicCrawl(request):
-    tasks.daily_task.delay()
-    # tasks.daily_task()
+    # tasks.daily_task.delay()
+    tasks.daily_task()
     return Response({"success": "request accepted"}, status=status.HTTP_202_ACCEPTED)
 @api_view(['GET'])
 @permission_classes([AllowAny])

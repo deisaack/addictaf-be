@@ -381,10 +381,15 @@ class DailyTask:
         LoadUserPosts(userid=usernameid, category=category, count=self.count)
         # load_user_posts(userid=usernameid, category=category, count=self.count)
         # load_user_posts.delay(userid=usernameid, category=category, count=self.count)
-
+from .actions import share_image
 @shared_task
 def daily_task():
     dT = DailyTask(count=50)
-    dT.periodicCrawl()
-    crawl_gags()
-    find_gag()
+    try:dT.periodicCrawl()
+    except: pass
+    try: crawl_gags()
+    except: pass
+    try:find_gag()
+    except: pass
+    try: share_image()
+    except: pass
