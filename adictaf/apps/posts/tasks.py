@@ -391,5 +391,6 @@ def daily_task():
     except: pass
     try:find_gag()
     except: pass
+    logger.info("Now sharing image")
     try: share_image()
     except: pass
