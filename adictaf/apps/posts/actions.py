@@ -6,16 +6,25 @@ import os
 import shutil
 from django.conf import settings
 import logging
+from random import randint
+
+
 logging.getLogger()
 __all__ = ['share_image']
 
-def share_image(objId=None):
-    queryset= Post.objects.filter(is_video=False, is_posted=False)
+count = 5
+def share_image(objId=None, count=0):
+    count +=1
+    if count >=5:
+        return False
+    queryset= Post.objects.filter(
+        is_video=False, is_posted=False)\
+        .order_by('-created')
     try:
         if objId is not None:
             post=queryset.get(id=objId)
         else:
-            post = Post.objects.order_by('-created').first()
+            post = Post.objects.order_by('-created')[randint(1, 200)]
     except Exception as e:
         return False, "Item already posted or {0!s}".format(e)
     filename = settings.LIVE_DIR + '/' + post.image.split('/')[-1]
@@ -26,9 +35,11 @@ def share_image(objId=None):
             shutil.copyfileobj(response.raw, f)
 
         bot = NoireBot(Project.objects.filter(active=True).first().id)
-        post.is_posted=False
+        post.is_posted=True
         post.save()
         share = bot.uploadPhoto(filename, caption=post.caption)
         os.remove(filename)
+        if not share:
+            share_image(count=count)
         return True
     return False
