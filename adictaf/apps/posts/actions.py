@@ -5,7 +5,8 @@ import requests
 import os
 import shutil
 from django.conf import settings
-
+import logging
+logging.getLogger()
 __all__ = ['share_image']
 
 def share_image(objId=None):
@@ -16,7 +17,7 @@ def share_image(objId=None):
         else:
             post = Post.objects.order_by('-created').first()
     except Exception as e:
-        return False, "Item already posted"
+        return False, "Item already posted or {0!s}".format(e)
     filename = settings.LIVE_DIR + '/' + post.image.split('/')[-1]
     response = requests.get(post.image, stream=True)
     if response.status_code == 200:
