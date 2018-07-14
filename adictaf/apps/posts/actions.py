@@ -27,7 +27,8 @@ def share_image(objId=None):
 
         bot = NoireBot(Project.objects.filter(active=True).first().id)
         post.is_posted=False
-        os.remove(filename)
         post.save()
-        return bot.uploadPhoto(filename, caption=post.caption)
+        share = bot.uploadPhoto(filename, caption=post.caption)
+        os.remove(filename)
+        return True
     return False
