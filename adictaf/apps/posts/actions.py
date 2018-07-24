@@ -17,9 +17,7 @@ def share_image(objId=None, count=0):
     count +=1
     if count >=5:
         return False
-    queryset= Post.objects.exclude(
-        is_video=True, is_posted=True)\
-        .order_by('-created')
+    queryset= Post.objects.order_by('-created')
     try:
         if objId is not None:
             post=queryset.get(id=objId)
