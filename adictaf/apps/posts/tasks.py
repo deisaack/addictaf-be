@@ -384,13 +384,14 @@ class DailyTask:
 from .actions import share_image
 @shared_task
 def daily_task():
-    dT = DailyTask(count=50)
+
+    logger.info("Now sharing image")
+    share_image()
+    logger.info("finished sharing")
+    dT = DailyTask(count=10)
     try:dT.periodicCrawl()
     except: pass
     try: crawl_gags()
     except: pass
     try:find_gag()
-    except: pass
-    logger.info("Now sharing image")
-    try: share_image()
     except: pass
