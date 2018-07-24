@@ -61,17 +61,15 @@ def getVideoInfo(filename):
     return res
 
 
-def uploadVideo(self, video, thumbnail, caption=None, upload_id=None):
-    print('a')
-    if upload_id is None:
-        upload_id = str(int(time.time() * 1000))
+def uploadVideo(self, video, thumbnail, caption=None):
+    upload_id = str(int(time.time() * 1000))
     data = {
         'upload_id': upload_id,
         '_csrftoken': self.token,
         'media_type': '2',
-        '_uuid': self.project.uuid,
+        '_uuid': self.project.get_uuid(),
     }
-    print('b')
+    print('b', data)
 
     m = MultipartEncoder(data, boundary=self.project.uuid)
     self.s.headers.update({'X-IG-Capabilities': '3Q4=',
@@ -83,19 +81,15 @@ def uploadVideo(self, video, thumbnail, caption=None, upload_id=None):
                                  'Content-type': m.content_type,
                                  'Connection': 'keep-alive',
                                  'User-Agent': settings.NOIRE['USER_AGENT']})
-    print('c')
 
     response = self.s.post(settings.NOIRE['API_URL'] + "upload/video/", data=m.to_string())
-    # print('d')
 
     if response.status_code == 200:
         body = json.loads(response.text)
         upload_url = body['video_upload_urls'][3]['url']
         upload_job = body['video_upload_urls'][3]['job']
-        print('e')
         with open(video, 'rb') as video_bytes:
             videoData = video_bytes.read()
-        print('f')
         # solve issue #85 TypeError: slice indices must be integers or None or have an __index__ method
         request_size = int(math.floor(len(videoData) / 4))
         lastRequestExtra = (len(videoData) - (request_size * 3))
@@ -145,6 +139,7 @@ def uploadVideo(self, video, thumbnail, caption=None, upload_id=None):
 def configureVideo(self, upload_id, video, thumbnail, caption=''):
     clipInfo = getVideoInfo(video)
     self.uploadPhoto(photo=thumbnail, caption=caption, upload_id=upload_id)
+    print('z ',clipInfo)
     data = json.dumps({
         'upload_id': upload_id,
         'source_type': 3,

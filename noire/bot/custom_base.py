@@ -96,6 +96,9 @@ class NoireBot(object):
             if os.path.exists(dir): continue
             os.makedirs(dir)
 
+    def uploadVideo(self, video, thumbnail, caption=None):
+        return uploadVideo(self, video=video, thumbnail=thumbnail, caption=caption)
+
     def close(self):
         now_time = datetime.datetime.now()
         log_string = 'NoireBot Clossed at %s: hurrray' % \
@@ -296,9 +299,6 @@ class NoireBot(object):
 
     # def downloadPhoto(self, media_id, filename, media=False, path='local/photos/'):
     #     return downloadPhoto(self, media_id, filename, media, path)
-
-    def uploadVideo(self, photo, caption=None, upload_id=None):
-        return uploadVideo(self, photo, caption, upload_id)
 
     def downloadVideo(self, media_id, filename, **kwargs):
         return downloadVideo(self, media_id, filename, **kwargs)
