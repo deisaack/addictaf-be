@@ -27,26 +27,21 @@ def share_image(objId=None, count=0):
             post = Post.objects.order_by('-created')[randint(1, 200)]
     except Exception as e:
         return False, "Item already posted or {0!s}".format(e)
-    print('aaaaaaaaaaaaaa')
     filename = settings.LIVE_DIR + '/' + post.image.split('/')[-1]
     response = requests.get(post.image, stream=True)
     if response.status_code == 200:
-        print('bbbbbbbbbbbbbbbbb')
         with open(filename, 'wb') as f:
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)
 
         bot = NoireBot(Project.objects.filter(active=True).first().id)
-        print('ccccccccccccccccccc')
         post.is_posted=True
         post.save()
-        share = bot.uploadPhoto(filename, caption=post.caption)
-        print('dddddddddddddddd')
-        caption = str(post.caption) + ". To see more, visit https://www.addictaf.com/post?id={0!s}".format(post.id)
+        caption = str(post.caption) + ". http://www.addictaf.com/post?id={0!s}".format(post.id)
+        share = bot.uploadPhoto(filename, caption=caption)
         post_with_image(filename, caption=caption)
         os.remove(filename)
         if not share:
-            print('eeeeeeeeeeeeee')
             share_image(count=count)
         return True
     return False
