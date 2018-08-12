@@ -43,6 +43,40 @@ def share_image(objId=None, count=0):
             share_image(count=count)
         return True
     return False
+from adictaf.utilities.common import get_active_project
+def shareVideo(objId=None):
+    count =0
+    bot = NoireBot(projectId=get_active_project())
+    while count < 50:
+        print(count, 'aaaaaaaaaaaaaaaaaa')
+        try:
+            queryset=Post.objects.filter(is_posted=False, is_video=True).order_by('-created')[:200]
+            try:
+                post = queryset.get(id=objId)
+            except:
+                post = queryset.all()[randint(1, 200)]
+            post.is_posted=True
+            post.save()
+            print(post, 'bbbbbbbbbbbbbbbbbbbbbbbb')
+            responseVideo = requests.get(post.image, stream=True)
+            responseVideo.raise_for_status()
+            videoName = settings.LIVE_DIR + '/' + post.video.split('/')[-1]
+            with open(videoName, 'wb') as f:
+                responseVideo.raw.decode_content = True
+                shutil.copyfileobj(responseVideo.raw, f)
+            print(videoName, 'cccccccccccccccccc')
+            responsePhoto = requests.get(post.image, stream=True)
+            responsePhoto.raise_for_status()
+            photoName = settings.LIVE_DIR + '/' + post.image.split('/')[-1]
+            with open(photoName, 'wb') as f:
+                responsePhoto.raw.decode_content = True
+                shutil.copyfileobj(responsePhoto.raw, f)
+            print(photoName, 'dddddddddddddddddddddd')
+            share = bot.uploadVideo(video=videoName,thumbnail=photoName, caption=post.caption)
+            print(share, 'eeeeeeeeeeeeeeeeeeeeeeeeee')
+        except Exception as e:
+            print(e, 'ffffffffffffffff')
+        count +=1
 
 
 from decouple import config
@@ -89,4 +123,10 @@ def update_profile_pic():
         graph.put_photo(img, album_path=album+'/photos')
 
 
+def uploadVideo():
+    url = 'https://graph-video.facebook.com/100000198728296/videos?access_token=' + str(access)
+    path = "/home/abc.mp4"
+    files = {'file': open(path, 'rb')}
+    flag = requests.post(url, files=files).text
+    return float
 

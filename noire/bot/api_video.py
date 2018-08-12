@@ -124,6 +124,7 @@ def uploadVideo(self, video, thumbnail, caption=None):
 
             response = self.s.post(upload_url, data=videoData[start:start + length])
             print('i')
+            print(response.content)
         self.s.headers = headers
 
         if response.status_code == 200:
@@ -149,7 +150,7 @@ def configureVideo(self, upload_id, video, thumbnail, caption=''):
         'filter_type': 0,
         'video_result': 'deprecated',
         'clips': {
-            'length': clipInfo['duration'],
+            'length': 0.23,
             'source_type': '3',
             'camera_position': 'back',
         },
@@ -159,7 +160,7 @@ def configureVideo(self, upload_id, video, thumbnail, caption=''):
         },
         'device': settings.NOIRE['DEVICE_SETTINTS'],
         '_csrftoken': self.token,
-        '_uuid': self.project.uuid,
+        '_uuid': self.project.get_uuid(),
         '_uid': self.project.user_id,
         'caption': caption,
     })

@@ -13,3 +13,10 @@ def request_ip(request):
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
+
+from adictaf.apps.core.models import Project
+def get_active_project(isObject=False):
+    proj = Project.objects.filter(active=True).first()
+    if isObject:
+        return proj
+    return str(proj.id)

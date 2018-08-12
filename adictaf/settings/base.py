@@ -59,6 +59,7 @@ SERVER_EMAIL=config('EMAIL_HOST')
 GEOIP_PATH = os.path.join(BASE_DIR, 'adictaaf/utilities/geo')
 
 INSTALLED_APPS = [
+    'suit',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
