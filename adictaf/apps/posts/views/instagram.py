@@ -27,6 +27,7 @@ from ..tasks import load_user_posts
 
 logger = logging.getLogger(__name__)
 
+from django.utils.timezone import datetime
 class PostViewset(viewsets.ReadOnlyModelViewSet):
     serializer_class = sz.PostSerializer
     queryset = Post.objects.all()
@@ -95,6 +96,7 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
         queryset_list = super(PostViewset, self).get_queryset(*args, **kwargs)
         tags = self.request.GET.get('tags', None)
         choise = self.request.GET.get('category', None)
+        world_cup = self.request.GET.get('world_cup', None)
         if tags is not None:
             try:
                 tags=tags.split(',')
@@ -105,6 +107,9 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
             queryset_list = queryset_list.order_by('-views')
         if choise == 'trending':
             queryset_list = queryset_list.order_by('-up_votes')
+        if world_cup is not None :
+            t = datetime(2018, 7, 20)
+            queryset_list = queryset_list.filter(created__lte=t)
         return queryset_list
 
     def retrieve(self, *args, **kwargs):
