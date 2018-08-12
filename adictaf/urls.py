@@ -13,7 +13,6 @@ admin.site.index_title = 'AdictAF SITE ADMINISTRATION'
 from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('developer/', admin.site.urls),
     path('policy/', views.Policy.as_view()),
     path('core/', include('adictaf.apps.core.urls', namespace='core')),
