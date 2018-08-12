@@ -95,7 +95,7 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self, *args, **kwargs):
         queryset_list = super(PostViewset, self).get_queryset(*args, **kwargs)
         tags = self.request.GET.get('tags', None)
-        choise = self.request.GET.get('choice', None)
+        choise = self.request.GET.get('choise', None)
         world_cup = self.request.GET.get('world_cup', None)
         if tags is not None:
             try:
@@ -104,9 +104,12 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
             except:
                 pass
         if choise == 'hot':
-            queryset_list = queryset_list.order_by('-views')
+            print("choice")
+            queryset_list = queryset_list.order_by('-views')[10:]
         if choise == 'trending':
-            queryset_list = queryset_list.order_by('-up_votes')
+            queryset_list = queryset_list.order_by('-up_votes')[20:]
+        if choise == "common":
+            queryset_list = queryset_list.order_by("-created")[40:]
         if world_cup is not None :
             t = datetime(2018, 7, 20)
             queryset_list = queryset_list.filter(created__lte=t)
