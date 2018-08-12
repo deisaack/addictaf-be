@@ -95,7 +95,7 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self, *args, **kwargs):
         queryset_list = super(PostViewset, self).get_queryset(*args, **kwargs)
         tags = self.request.GET.get('tags', None)
-        choise = self.request.GET.get('category', None)
+        choise = self.request.GET.get('choice', None)
         world_cup = self.request.GET.get('world_cup', None)
         if tags is not None:
             try:
