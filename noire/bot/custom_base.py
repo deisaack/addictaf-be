@@ -47,8 +47,7 @@ class NoireLoginException(RuntimeError):
 
 
 class NoireBot(object):
-    def __init__(self, projectId,
-                 ):
+    def __init__(self, projectId):
         self.project = Project.objects.get(id=projectId)
         self.start_time = datetime.datetime.now()
         self.logger = logging.getLogger('[noire_{}]'.format(id(self)))
@@ -114,6 +113,7 @@ class NoireBot(object):
         if success:
             try:
                 self.token = self.s.cookies.get('csrftoken', path='i.instagram.com')
+
             except requests.cookies.CookieConflictError:
                 raise
             self.s.headers.update({'X-CSRFToken': self.token})
@@ -122,8 +122,65 @@ class NoireBot(object):
             self.logger.info(log_string)
             return True
         self.logger.error(detail)
-        return False
 
+        m = hashlib.md5()
+        m.update(self.project.username.encode('utf-8') + self.project.get_password.encode('utf-8'))
+        self.proxy = proxy
+        self.device_id = self.project.device_id
+        self.uuid = self.project.get_uuid(True)
+
+        if (not self.isLoggedIn or force):
+            if self.proxy is not None:
+                parsed = urllib.parse.urlparse(self.proxy)
+                scheme = 'http://' if not parsed.scheme else ''
+                proxies = {
+                    'http': scheme + self.proxy,
+                    'https': scheme + self.proxy,
+                }
+                self.s.proxies.update(proxies)
+            if (
+                    self.SendRequest('si/fetch_headers/?challenge_type=signup&guid=' + self.project.get_uuid(False),
+                                     None, True)):
+
+                data = {'phone_id': self.project.get_uuid(True),
+                        '_csrftoken': self.LastResponse.cookies['csrftoken'],
+                        'username': self.project.username,
+                        'guid': self.uuid,
+                        'device_id': self.device_id,
+                        'password': self.project.get_password,
+                        'login_attempt_count': '0'}
+                print(json.dumps(data))
+                if self.SendRequest('accounts/login/', self.generateSignature(json.dumps(data)), True):
+                    self.isLoggedIn = True
+                    self.user_id = self.LastJson["logged_in_user"]["pk"]
+                    self.rank_token = "%s_%s" % (self.user_id, self.uuid)
+                    self.token = self.LastResponse.cookies["csrftoken"]
+
+                    self.logger.info("Login success as %s!", self.project.username)
+                    self.__save_user()
+                    self.__save_cookies()
+                    return True
+                else:
+                    self.logger.info("Login or password is incorrect.")
+                    # return False
+                    raise NoireLoginException
+
+    def getUserFollowers(self, usernameId, maxid=''):
+        if maxid == '':
+            return self.SendRequest('friendships/' + str(usernameId) + '/followers/?rank_tp.ref oken=' + self.project.rank_token)
+        else:
+            return self.SendRequest(
+                'friendships/' + str(usernameId) + '/followers/?rank_token=' + self.project.rank_token + '&max_id=' + str(
+                    maxid))
+
+    def follow(self, userId):
+        data = json.dumps({
+            '_uuid': self.project.get_uuid(True),
+            '_uid': self.project.user_id,
+            'user_id': self.project.user_id,
+            '_csrftoken': self.token
+        })
+        return self.SendRequest('friendships/create/' + str(userId) + '/', self.generateSignature(data))
 
     def SendRequest(self, endpoint, post=None, login=False):
         if (not self.isLoggedIn and not login):
@@ -171,9 +228,9 @@ class NoireBot(object):
                 self.LastResponse = response
                 self.LastJson = json.loads(response.text)
             except Exception:
-                pass
+                self.LastJson = {"no": "obj"}
             status = False
-
+        self.token = self.LastResponse.cookies.get('csrftoken', path='i.instagram.com')
         self.__save_cookies()
         self.__save_user()
         return status
@@ -243,14 +300,11 @@ class NoireBot(object):
         """
         return get_your_medias(self, as_dict)
 
-
     def uploadPhoto(self, photo, caption=None, upload_id=None):
         return uploadPhoto(self, photo, caption, upload_id)
 
-
     def getSelfUserFeed(self, maxid='', minTimestamp=None):
         return self.getUserFeed(self.project.user_id, maxid, minTimestamp)
-
 
     def getUserFeed(self, usernameId, maxid='', minTimestamp=None):
         url = 'feed/user/{username_id}/?max_id={max_id}&min_timestamp={min_timestamp}&rank_token={rank_token}&ranked_content=true'.format(
@@ -261,14 +315,11 @@ class NoireBot(object):
         )
         return self.SendRequest(url)
 
-
     def filter_medias(self, media_items, filtration=True, quiet=False, is_comment=False):
         return filter_medias(self, media_items, filtration, quiet, is_comment)
 
-
     def configurePhoto(self, upload_id, photo, caption=''):
         return configurePhoto(self, upload_id, photo, caption)
-
 
     def expose(self):
         data = json.dumps({
@@ -283,13 +334,11 @@ class NoireBot(object):
     def get_user_medias(self, username, filtration=True, is_comment=False):
         return get_user_medias(self, username, filtration, is_comment)
 
-
     def convert_to_user_id(self, usernames):
         return convert_to_user_id(self, usernames)
 
     def get_userid_from_username(self, username):
         return get_userid_from_username(self, username)
-
 
     def searchUsername(self, username):
         return searchUsername(self, username)
@@ -357,3 +406,76 @@ class NoireBot(object):
     def getHashtagFeed(self, hashtagString, maxid=''):
         return self.SendRequest('feed/tag/' + hashtagString + '/?max_id=' + str(
             maxid) + '&rank_token=' + self.token + '&ranked_content=true&')
+
+
+
+class MemeBot(object):
+    url_follow = 'https://www.instagram.com/web/friendships/%s/follow/'
+    s = requests.Session()
+    def __init__(self, projectId):
+        self.project = Project.objects.get(id=projectId)
+
+    def follow(self, user_id):
+        """ Send http request to follow """
+        if self.login_status:
+            url_follow = self.url_follow % (user_id)
+            try:
+                follow = self.s.post(url_follow)
+                if follow.status_code == 200:
+                    return True
+                return follow
+            except:
+                logging.exception("Except on follow!")
+        return False
+
+    def login(self):
+        log_string = 'Trying to login as %s...\n' % (self.user_login)
+        self.write_log(log_string)
+        self.login_post = {
+            'username': self.user_login,
+            'password': self.user_password
+        }
+
+        self.s.headers.update({
+            'Accept': '*/*',
+            'Accept-Language': self.accept_language,
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Connection': 'keep-alive',
+            'Content-Length': '0',
+            'Host': 'www.instagram.com',
+            'Origin': 'https://www.instagram.com',
+            'Referer': 'https://www.instagram.com/',
+            'User-Agent': self.user_agent,
+            'X-Instagram-AJAX': '1',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        })
+
+        r = self.s.get(self.url)
+        self.s.headers.update({'X-CSRFToken': r.cookies['csrftoken']})
+        time.sleep(5 * random.random())
+        login = self.s.post(
+            self.url_login, data=self.login_post, allow_redirects=True)
+        self.s.headers.update({'X-CSRFToken': login.cookies['csrftoken']})
+        self.csrftoken = login.cookies['csrftoken']
+        # ig_vw=1536; ig_pr=1.25; ig_vh=772;  ig_or=landscape-primary;
+        self.s.cookies['ig_vw'] = '1536'
+        self.s.cookies['ig_pr'] = '1.25'
+        self.s.cookies['ig_vh'] = '772'
+        self.s.cookies['ig_or'] = 'landscape-primary'
+        time.sleep(5 * random.random())
+
+        if login.status_code == 200:
+            r = self.s.get('https://www.instagram.com/')
+            finder = r.text.find(self.user_login)
+            if finder != -1:
+                ui = UserInfo()
+                self.user_id = ui.get_user_id_by_login(self.user_login)
+                self.login_status = True
+                log_string = '%s login success!' % (self.user_login)
+                self.write_log(log_string)
+            else:
+                self.login_status = False
+                self.write_log('Login error! Check your login data!')
+        else:
+            self.write_log('Login error! Connection error!')
