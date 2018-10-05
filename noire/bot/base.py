@@ -611,7 +611,7 @@ class NoireBot(object):
 
     def getUserFollowers(self, usernameId, maxid=''):
         if maxid == '':
-            return self.SendRequest('friendships/' + str(usernameId) + '/followers/?rank_token=' + self.rank_token)
+            return self.SendRequest('friendships/' + str(usernameId) + '/followers/?rank_tp.ref oken=' + self.rank_token)
         else:
             return self.SendRequest(
                 'friendships/' + str(usernameId) + '/followers/?rank_token=' + self.rank_token + '&max_id=' + str(
