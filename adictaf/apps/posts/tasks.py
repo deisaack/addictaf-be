@@ -35,7 +35,7 @@ def processObj(obj, category):
         if obj['type'] == 'Animated':
             isVideo = True
             video = obj['images']['image460sv']['url']
-        post, created = Post.objects.update_or_create(
+        post, created = Post.objects.get_or_create(
             gag_id=obj['id'],
             defaults={
                 'id': random.randint(1000, 100000000),
@@ -51,6 +51,45 @@ def processObj(obj, category):
         pass
     except:
         raise
+
+def processImgur(obj, category):
+    if Post.objects.filter(gag_id=obj['id']).exists():
+        return False
+
+    isVideo = False
+    tags = []
+    for tag in obj['tags']:
+        tags.append(tag['name'])
+    try:
+        image_obj = obj['images'][-1]
+    except:
+        return False, "No images"
+    try:
+        isVideo = image_obj['animated']
+    except KeyError:
+        pass
+    if isVideo:
+        video = image_obj['gifv']
+    else:
+        video = None
+    try:
+        post, created = Post.objects.get_or_create(
+            gag_id=obj['id'],
+            defaults={
+                "id": random.randint(100000, 10000000000),
+                "caption": obj["title"],
+                "is_video": isVideo,
+                "image": image_obj['link'],
+                "video": video,
+                "category": category,
+                "tags": tags
+            }
+        )
+    except MultipleObjectsReturned:
+        return  False, "Multiple obj"
+    except Exception as e:
+        return False, str(e)
+    return True, post
 
 def find_gag():
     r = requests.get('https://m.9gag.com/football/hot',
@@ -381,6 +420,25 @@ class DailyTask:
         LoadUserPosts(userid=usernameid, category=category, count=self.count)
         # load_user_posts(userid=usernameid, category=category, count=self.count)
         # load_user_posts.delay(userid=usernameid, category=category, count=self.count)
+
+
+def imgur():
+    r = requests.get(
+        "https://api.imgur.com/3/gallery/t/soccer/",
+        headers={
+            "Authorization": "Client-ID 748ccbb88149c61"
+        }
+    )
+    data = r.json()['data']['items']
+    count = 0
+    for obj in  data:
+        o = processImgur(obj, "SPORTSMEME")
+        print(count)
+        print(o)
+        count+=1
+    return count
+
+
 from .actions import share_image
 @shared_task
 def daily_task():
