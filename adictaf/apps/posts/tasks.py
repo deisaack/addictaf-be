@@ -440,18 +440,22 @@ def imgur():
 
 
 from .actions import share_image
-@shared_task
 def daily_task():
-    try:
-        logger.info("Now sharing image")
-        share_image()
-    except:
-        pass
-    logger.info("finished sharing")
-    dT = DailyTask(count=10)
-    try:dT.periodicCrawl()
-    except: pass
-    try: crawl_gags()
-    except: pass
-    try:find_gag()
-    except: pass
+    crawl_gags()
+
+# from .actions import share_image
+# @shared_task
+# def daily_task():
+#     try:
+#         logger.info("Now sharing image")
+#         share_image()
+#     except:
+#         pass
+#     logger.info("finished sharing")
+#     dT = DailyTask(count=10)
+#     try:dT.periodicCrawl()
+#     except: pass
+#     try: crawl_gags()
+#     except: pass
+#     try:find_gag()
+#     except: pass
