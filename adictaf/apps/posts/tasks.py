@@ -52,6 +52,21 @@ def processObj(obj, category):
     except:
         raise
 
+BASE = str(os.path.join(settings.NOIRE['MEDIA_DIR']))
+VIDEO_DIR = BASE + "/video/"
+def download_meedia(url):
+    r = requests.get(url)
+    filename = url.split("/")[-1]
+    if r.status_code == 200:
+        import urllib3
+        f = open('00000001.jpg', 'wb')
+        f.write(urllib3.connection_from_url('http://www.gunnerkrigg.com//comics/00000001.jpg').read())
+        f.close()
+        # with open(VIDEO_DIR + filename, 'wb') as f:
+        #     r.raw.decode_content = True
+        #     shutil.copyfileobj(r.raw, f)
+        # return os.path.abspath(VIDEO_DIR + filename)
+
 def processImgur(obj, category):
     if Post.objects.filter(gag_id=obj['id']).exists():
         return False
@@ -85,6 +100,10 @@ def processImgur(obj, category):
                 "tags": tags
             }
         )
+        if video is None:
+            download_meedia(post.image)
+
+
     except MultipleObjectsReturned:
         return  False, "Multiple obj"
     except Exception as e:
@@ -261,7 +280,6 @@ class LoadUserPosts(object):
         self.upload_to_s3()
         # shutil.rmtree(self.bot.mediaDir, ignore_errors=False, onerror=None)
 
-
 class LoadTagPosts(object):
     def __init__(self, tag, category, count):
         self.category = category
@@ -386,6 +404,7 @@ def load_user_posts(userid, category, count):
     LoadUserPosts(userid=userid, category=category, count=count)
 
 
+
 class DailyTask:
     def __init__(self, **kwargs):
         self.count = int(kwargs.get('count', 10))
@@ -440,12 +459,16 @@ def imgur():
 
 
 from .actions import share_image
-def daily_task():
-    crawl_gags()
+# def daily_task():
+#     crawl_gags()
 
 # from .actions import share_image
-# @shared_task
-# def daily_task():
+from noire.bot.web import bot
+
+@shared_task
+def daily_task():
+    bot.crawl()
+
 #     try:
 #         logger.info("Now sharing image")
 #         share_image()
