@@ -52,10 +52,11 @@ class WebBot(object):
                 'image': img
             }
         )
-        if created:
+        # if created:
         p.create_tags_and_caption()
         if is_video:
             self.get_single_video(p)
+        self.get_image(p)
 
     def get_image(self, instance):
         if not instance.image:
