@@ -74,7 +74,8 @@ class WebBot(object):
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)
         upload = self.upload_to_s3(filename)
-        instance.video = upload
+        instance.image_hd = upload
+        instance.image_sm = upload
         instance.save()
 
     def get_single_video(self, instance):
@@ -99,7 +100,10 @@ class WebBot(object):
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)
         upload = self.upload_to_s3(filename)
-        instance.video = upload
+        print("+"*1000)
+        print("RETURN: ", upload)
+        instance.video_hd = upload
+        instance.video_sm = upload
         instance.save()
 
 
@@ -115,11 +119,10 @@ class WebBot(object):
             os.remove(filename)
         except FileNotFoundError:
             return None
-        return upload_location
+        return upload_location[6:]
 
 
 bot = WebBot()
 
 if __name__ == '__main__':
     bot.crawl()
-
