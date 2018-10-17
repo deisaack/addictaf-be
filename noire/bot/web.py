@@ -52,9 +52,29 @@ class WebBot(object):
                 'image': img
             }
         )
+        if created:
         p.create_tags_and_caption()
         if is_video:
             self.get_single_video(p)
+
+    def get_image(self, instance):
+        if not instance.image:
+            return
+        response = self.s.get(instance.image, stream=True)
+        if not response.status_code == 200:
+            return
+        dir = str(os.path.join(settings.NOIRE['MEDIA_DIR'])) + "/images/"
+        if os.path.exists(dir):
+            pass
+        else:
+            os.makedirs(dir)
+        filename = dir + str(instance.id) + ".mp4"
+        with open(filename, 'wb') as f:
+            response.raw.decode_content = True
+            shutil.copyfileobj(response.raw, f)
+        upload = self.upload_to_s3(filename)
+        instance.video = upload
+        instance.save()
 
     def get_single_video(self, instance):
         r = self.s.get(self.post_detail_url.format(instance.shortcode))
