@@ -69,7 +69,7 @@ class WebBot(object):
             pass
         else:
             os.makedirs(dir)
-        filename = dir + str(instance.id) + ".mp4"
+        filename = dir + str(instance.id) + ".jpg"
         with open(filename, 'wb') as f:
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)
