@@ -38,6 +38,6 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.activities.filter(activity_type=Activity.DOWN_VOTE).count()
 
     def get_related(self, obj):
-        queryset = obj.related_posts
+        queryset = obj.related_posts[:6]
         serializer = PostListSerializer(queryset, many=True)
         return serializer.data
