@@ -48,6 +48,8 @@ class BaseObj(models.Model):
 class HashTag(BaseObj):
     pass
 
+from django.db.models import Q
+
 class Post(models.Model):
     # id = models.CharField(primary_key=True, unique=True, validators=[MinValueValidator(1)])
     id = models.CharField(primary_key=True, unique=True, max_length=100)
@@ -94,6 +96,17 @@ class Post(models.Model):
     def publish(self):
         self.status= Status.PUBLISHED
         self.save()
+
+    @property
+    def related_posts(self):
+        q = Post.objects.all().exclude(id=self.id)
+        id_list = []
+        for tag in self.tags:
+            try:
+                id_list += [item.id for item in q.filter(tags__contains=[tag])]
+            except Exception as e: pass
+        id_list = set(id_list)
+        return q.filter(id__in=id_list)
 
     def create_tags_and_caption(self):
         caption = self.caption_tmp

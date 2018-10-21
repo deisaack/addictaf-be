@@ -38,13 +38,14 @@ def processObj(obj, category):
         post, created = Post.objects.get_or_create(
             gag_id=obj['id'],
             defaults={
-                'id': random.randint(1000, 100000000),
+                'id': random.randint(1000, 10000000000),
                 'caption': obj['title'],
                 'is_video': isVideo,
                 'image': obj['images']['image460']['url'],
                 'video': video,
                 'category': category,
-                'tags': tags
+                'tags': tags,
+                "source": "9GAG"
             }
         )
     except MultipleObjectsReturned:
@@ -97,7 +98,8 @@ def processImgur(obj, category):
                 "image": image_obj['link'],
                 "video": video,
                 "category": category,
-                "tags": tags
+                "tags": tags,
+                "source": "IMGUR"
             }
         )
         if video is None:
