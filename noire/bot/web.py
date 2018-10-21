@@ -34,6 +34,7 @@ class WebBot(object):
 
     def save(self, post):
         is_video = post['is_video']
+        if not is_video: return
         try:
             img = post['thumbnail_resources'][-1]['src']
         except:
@@ -83,10 +84,11 @@ class WebBot(object):
         if not r.status_code == 200:
             return
         data = r.json()
-        try:
-            video= data['graphql']['shortcode_media']['video_url']
-        except:
-            return
+        # try:
+        video= data['graphql']['shortcode_media']['video_url']
+        # except:
+        #     return
+        print(video)
         response = self.s.get(video, stream=True)
         if not response.status_code == 200:
             return
@@ -100,13 +102,12 @@ class WebBot(object):
             response.raw.decode_content = True
             shutil.copyfileobj(response.raw, f)
         upload = self.upload_to_s3(filename)
-        print("+"*1000)
         print("RETURN: ", upload)
         instance.video_hd = upload
         instance.video_sm = upload
         instance.save()
         try:
-            instance.video = instance.video_hd.url
+            instance.video = instance.video_hd.url.split("?")[0]
             instance.save()
         except: pass
 
