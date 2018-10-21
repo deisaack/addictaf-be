@@ -468,7 +468,6 @@ from noire.bot.web import bot
 @shared_task
 def daily_task():
     bot.crawl()
-
     try: crawl_gags()
     except: pass
     try:find_gag()

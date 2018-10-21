@@ -34,7 +34,6 @@ class WebBot(object):
 
     def save(self, post):
         is_video = post['is_video']
-        if not is_video: return
         try:
             img = post['thumbnail_resources'][-1]['src']
         except:
