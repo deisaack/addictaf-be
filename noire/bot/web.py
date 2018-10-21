@@ -105,6 +105,10 @@ class WebBot(object):
         instance.video_hd = upload
         instance.video_sm = upload
         instance.save()
+        try:
+            instance.video = instance.video_hd.url
+            instance.save()
+        except: pass
 
 
     def upload_to_s3(self, filename):
