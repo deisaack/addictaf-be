@@ -469,16 +469,7 @@ from noire.bot.web import bot
 def daily_task():
     bot.crawl()
 
-#     try:
-#         logger.info("Now sharing image")
-#         share_image()
-#     except:
-#         pass
-#     logger.info("finished sharing")
-#     dT = DailyTask(count=10)
-#     try:dT.periodicCrawl()
-#     except: pass
-#     try: crawl_gags()
-#     except: pass
-#     try:find_gag()
-#     except: pass
+    try: crawl_gags()
+    except: pass
+    try:find_gag()
+    except: pass
