@@ -128,5 +128,7 @@ class WebBot(object):
 
 bot = WebBot()
 
+
 if __name__ == '__main__':
     bot.crawl()
+

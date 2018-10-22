@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 from django.utils.timezone import datetime
 class PostViewset(viewsets.ReadOnlyModelViewSet):
-    serializer_class = sz.PostSerializer
+    serializer_class = sz.PostListSerializer
     queryset = Post.objects.all()
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
@@ -119,7 +119,8 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
         obj = self.get_object()
         obj.views +=1
         obj.save()
-        return super(PostViewset, self).retrieve(*args, **kwargs)
+        return Response(sz.PostSerializer(obj).data)
+        # return super(PostViewset, self).retrieve(*args, **kwargs)
 
 
 class UserViewSet(viewsets.ViewSet):

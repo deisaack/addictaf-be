@@ -11,7 +11,7 @@ from .models import Post
 class PostListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['image', 'category', 'id', 'caption', 'is_video',]
+        fields = ['image', 'id', 'caption', 'is_video', "created", "views"]
         read_only_fields = (
             'id',
         )
@@ -41,3 +41,4 @@ class PostSerializer(serializers.ModelSerializer):
         queryset = obj.related_posts[:6]
         serializer = PostListSerializer(queryset, many=True)
         return serializer.data
+
