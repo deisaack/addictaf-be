@@ -98,8 +98,11 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
         tag = self.request.GET.get('tag', None)
         choise = self.request.GET.get('choise', None)
         world_cup = self.request.GET.get('world_cup', None)
-        if not tag:
-            queryset_list = queryset_list.filter(caption__icontains=tag)
+        if tag:
+            import random
+
+            # queryset_list = queryset_list.filter(caption__icontains=tag)
+            queryset_list = queryset_list[random.randint(0, 100):]
         if tags is not None:
             try:
                 tags=tags.split(',')
