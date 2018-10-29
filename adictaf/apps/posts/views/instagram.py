@@ -30,7 +30,10 @@ logger = logging.getLogger(__name__)
 from django.utils.timezone import datetime
 class PostViewset(viewsets.ReadOnlyModelViewSet):
     serializer_class = sz.PostListSerializer
-    queryset = Post.objects.all()
+    import random
+    now = datetime.now()
+    end = now - datetime.timedelta(hours=random.randint(0, 100))
+    queryset = Post.objects.exclude(created__lte=end)
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
     ordering_fields = ['created']
@@ -99,10 +102,7 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
         choise = self.request.GET.get('choise', None)
         world_cup = self.request.GET.get('world_cup', None)
         if tag:
-            import random
-            now = datetime.now()
-            end = now - datetime.timedelta(hours=random.randint(0, 100))
-            queryset_list = queryset_list.filter(created__lte=end)
+            pass
         if tags is not None:
             try:
                 tags=tags.split(',')
