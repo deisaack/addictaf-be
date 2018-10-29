@@ -30,10 +30,7 @@ logger = logging.getLogger(__name__)
 from django.utils.timezone import datetime
 class PostViewset(viewsets.ReadOnlyModelViewSet):
     serializer_class = sz.PostListSerializer
-    import random
-    now = datetime.now()
-    end = now - datetime.timedelta(hours=random.randint(0, 100))
-    queryset = Post.objects.exclude(created__lte=end)
+    queryset = Post.objects.all()
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
     ordering_fields = ['created']
