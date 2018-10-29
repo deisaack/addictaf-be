@@ -95,8 +95,11 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self, *args, **kwargs):
         queryset_list = super(PostViewset, self).get_queryset(*args, **kwargs)
         tags = self.request.GET.get('tags', None)
+        tag = self.request.GET.get('tag', None)
         choise = self.request.GET.get('choise', None)
         world_cup = self.request.GET.get('world_cup', None)
+        if not tag:
+            queryset_list = queryset_list.filter(caption__icontains=tag)
         if tags is not None:
             try:
                 tags=tags.split(',')
@@ -104,7 +107,6 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
             except:
                 pass
         if choise == 'hot':
-            print("choice")
             queryset_list = queryset_list.order_by('-views')
         if choise == 'trending':
             queryset_list = queryset_list.order_by('-up_votes')
@@ -168,6 +170,7 @@ def periodicCrawl(request):
     tasks.daily_task.delay()
     # tasks.daily_task()
     return Response({"success": "request accepted"}, status=status.HTTP_202_ACCEPTED)
+import time, datetime
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -179,17 +182,11 @@ def all_tags(request):
     if count > 100:
         count=100
     list_all=[]
-    for post in Post.objects.filter(category=category):
+    now = datetime.now()
+    start = now - datetime.timedelta(days=2)
+    for post in Post.objects.filter(created__gte=start):
         list_all.extend(post.tags)
 
-    # tags = {}
-    # for i in list_all:
-    #     if not i in tags:
-    #         tags[i] = 1
-    #         continue
-    #     tags[i] += 1
-    #
-    # all_values = sorted(tags.values())
     list_all=set(list_all)
     obj = {}
     for item in list_all:
@@ -206,5 +203,25 @@ def all_tags(request):
             break
         resp_items.append(item)
         i+= 1
-    return Response(resp_items)
+    return Response(sorted_by_value)
     # return Response(tags)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def words(request):
+    posts = Post.objects.all()
+    obj = {}
+    for post in posts:
+        for k in post.caption.split():
+            k = k.lower()
+            if not k in obj:
+                obj[k] = 1
+                continue
+            obj[k] += 1
+    keys = list(obj.keys())
+    for key in keys:
+        del obj[key]
+
+    sorted_by_value = OrderedDict(sorted(obj.items(), key=lambda x: x[1]))
+    return Response(sorted_by_value)
