@@ -210,7 +210,9 @@ def all_tags(request):
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def words(request):
-    posts = Post.objects.all()
+    now = datetime.now()
+    start = now - datetime.timedelta(days=10)
+    posts = Post.objects.filter(created__gte=start)
     obj = {}
     for post in posts:
         for k in post.caption.split():
