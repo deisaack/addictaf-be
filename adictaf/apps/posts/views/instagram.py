@@ -100,9 +100,9 @@ class PostViewset(viewsets.ReadOnlyModelViewSet):
         world_cup = self.request.GET.get('world_cup', None)
         if tag:
             import random
-
-            # queryset_list = queryset_list.filter(caption__icontains=tag)
-            queryset_list = queryset_list[random.randint(0, 100):]
+            now = datetime.now()
+            end = now - datetime.timedelta(hours=random.randint(0, 100))
+            queryset_list = queryset_list.filter(created__lte=end)
         if tags is not None:
             try:
                 tags=tags.split(',')
